@@ -1,8 +1,8 @@
 import sys
 import pygame as pg
 from config import *
-from ships_pews import PlayesShip, Arrow, PewBase, PewAntimatter, PewQuantum, load_image, EnemyShip
-from subclasses import *
+from ships_pews import PlayesShip, Arrow, PewBase, PewAntimatter, load_image
+from tools import random_spawn, Button, DataText, create_particles
 
 # ФПС
 clock = pg.time.Clock()
@@ -51,12 +51,13 @@ pg.display.set_caption(NAME)
 
 # Иконка окна
 pygame_icon = load_image('player2.png')
-pygame.display.set_icon(pygame_icon)
+pg.display.set_icon(pygame_icon)
 
 # Группы спрайтов
 all_sprites = pg.sprite.Group()
 player_sprite_group = pg.sprite.Group()
 arrow_sprite_group = pg.sprite.Group()
+particles_sprite_group = pg.sprite.Group()
 
 bluster_sprite_group = pg.sprite.Group()
 antimatter_sprite_group = pg.sprite.Group()
@@ -177,7 +178,7 @@ while running:
     # Если не начало или конец
     def main_part():
         global cooldown_enemy, cooldown_dmg
-        pygame.event.set_grab(True)
+        pg.event.set_grab(True)
 
         if pg.mouse.get_focused():
             # Если мышь в области экрана, двигаем корабль
@@ -275,8 +276,6 @@ while running:
             cooldown_enemy -= 1
 
 
-    ### Начало игры ###
-
     # Отрисовка экрана
     draw_screen()
 
@@ -287,7 +286,7 @@ while running:
         draw_nums()
 
 
-    # Игра заканчивается на смерти корабля
+    # Функция для экрана на старте
     def start():
         global show_mouse
         show_mouse = True
@@ -296,9 +295,10 @@ while running:
             screen.blit(start, (WIDTH // 2 - 400, HEIGHT // 2 + 40 * i - 200))
 
 
+    # Функция для экрана в конце
     def end():
         global show_mouse
-        pygame.event.set_grab(False)
+        pg.event.set_grab(False)
         show_mouse = True
 
         end_score = f'Всего очков: {player.score}'
@@ -309,6 +309,9 @@ while running:
         else:
             end_message1 = TEXT.data_end1[0]
             end_message2 = TEXT.data_end1[1]
+            create_particles(particles_sprite_group, GRAVITY, 1)
+            particles_sprite_group.draw(screen)
+            particles_sprite_group.update()
 
         end1 = END_FONT.render(end_message1, True, (255, 255, 255))
         end2 = END_FONT.render(end_message2, True, (255, 255, 255))
@@ -340,6 +343,7 @@ while running:
         arrow_sprite_group.draw(screen)
 
 
+    # Обновдение параметров
     def update_all():
         clock.tick(FPS)
         pg.display.update()

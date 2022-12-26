@@ -49,7 +49,7 @@ class PlayesShip(pygame.sprite.Sprite):
 
     def update(self, pos):
         self.rect.y = clamp(pos[1], 40, HEIGHT - 80)
-        self.hp = clamp(self.hp, 0, 100)
+        self.hp = max(self.hp, 0)
         if self.hp == 0:
             self.kill()
 

@@ -1,7 +1,29 @@
 import random as rd
 import pygame
-from config import HEIGHT, SPEED_SETTINGS, WIN_SCORE
-from ships_pews import EnemyShip, EnemyShipOmega
+from config import WIDTH, HEIGHT, SPEED_SETTINGS, WIN_SCORE
+from ships_pews import EnemyShip, EnemyShipOmega, load_image
+
+
+# Рандомный спавн врагов
+def random_spawn(group, player, level=1, group2=None):
+    res = []
+    n = rd.randint(3, 7)
+
+    yyy = list(range(50, HEIGHT - 60, 70))
+    yyy = rd.sample(yyy, k=n)
+
+    ship_type = 1
+    for y in yyy:
+        if level == 2:
+            ship_type = rd.randint(0, 6)
+        x = rd.randrange(-25, 25)
+        sp = SPEED_SETTINGS['ENEMY_SPEED']
+        speed = rd.randrange(sp[0], sp[1])
+        if ship_type:
+            res.append(EnemyShip(group, y, x, speed, player))
+        else:
+            res.append(EnemyShipOmega(group, y, x, speed, player, group2))
+    return res
 
 
 class Button:
@@ -53,28 +75,6 @@ class Button:
         self.screen.blit(self.buttonSurface, self.buttonRect)
 
 
-# Рандомный спавн врагов
-def random_spawn(group, player, level=1, group2=None):
-    res = []
-    n = rd.randint(3, 7)
-
-    yyy = list(range(50, HEIGHT - 60, 70))
-    yyy = rd.sample(yyy, k=n)
-
-    ship_type = 1
-    for y in yyy:
-        if level == 2:
-            ship_type = rd.randint(0, 6)
-        x = rd.randrange(-25, 25)
-        sp = SPEED_SETTINGS['ENEMY_SPEED']
-        speed = rd.randrange(sp[0], sp[1])
-        if ship_type:
-            res.append(EnemyShip(group, y, x, speed, player))
-        else:
-            res.append(EnemyShipOmega(group, y, x, speed, player, group2))
-    return res
-
-
 class DataText:
     def __init__(self, file_start, file_end1, file_end2):
         try:
@@ -106,3 +106,39 @@ class DataText:
         print(self.data_start)
         print(self.data_end1)
         print(self.data_end2)
+
+
+# Генератор частиц
+class Particle(pygame.sprite.Sprite):
+    fire = [load_image("star.png")]
+
+    for scale in (4, 8, 12):
+        fire.append(pygame.transform.scale(fire[0], (scale, scale)))
+
+    def __init__(self, group, gravity, pos, dx, dy):
+        super().__init__(group)
+        self.image = rd.choice(self.fire)
+        self.group = group
+        self.container = (0, 0, WIDTH, HEIGHT)
+        self.gravity = gravity
+        self.rect = self.image.get_rect()
+
+        self.velocity = [dx, dy]
+
+        self.rect.x, self.rect.y = pos
+
+    def update(self):
+        self.velocity[1] += self.gravity
+
+        self.rect.x += self.velocity[0]
+        self.rect.y += self.velocity[1]
+
+        if not self.rect.colliderect(self.container):
+            self.kill()
+
+
+def create_particles(group, gravity, particle_count=20):
+    numbers = range(-5, 6)
+    position = (rd.randint(0, WIDTH), rd.randint(0, HEIGHT))
+    for _ in range(particle_count):
+        Particle(group, gravity, position, rd.choice(numbers), rd.choice(numbers))

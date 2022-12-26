@@ -17,6 +17,9 @@ WIN_SCORE = 1000
 # Здоровье игрока
 PLAYER_HP = 100
 
+# Гравитация
+GRAVITY = 0.1
+
 SPEED_SETTINGS = {
     'BASE_SPEED': 8,
     'ANTIMATTER_SPEED': 16,
