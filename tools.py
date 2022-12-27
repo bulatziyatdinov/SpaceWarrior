@@ -1,7 +1,7 @@
-import random as rd
 import pygame
-from config import WIDTH, HEIGHT, SPEED_SETTINGS, WIN_SCORE
+from config import WIDTH, HEIGHT, SPEED_SETTINGS, WIN_SCORE_BASE, LEVEL_CHANCHES
 from ships_pews import EnemyShip, EnemyShipOmega, load_image
+import random as rd
 
 
 # Рандомный спавн врагов
@@ -12,10 +12,8 @@ def random_spawn(group, player, level=1, group2=None):
     yyy = list(range(50, HEIGHT - 60, 70))
     yyy = rd.sample(yyy, k=n)
 
-    ship_type = 1
     for y in yyy:
-        if level == 2:
-            ship_type = rd.randint(0, 6)
+        ship_type = rd.randint(LEVEL_CHANCHES[level][0], LEVEL_CHANCHES[level][1])
         x = rd.randrange(-25, 25)
         sp = SPEED_SETTINGS['ENEMY_SPEED']
         speed = rd.randrange(sp[0], sp[1])
@@ -81,7 +79,7 @@ class DataText:
             with open(f"text/{file_start}", 'r', encoding='utf-8') as f:
                 temp = f.readlines()
             self.data_start = list(map(str.strip, temp))
-            self.data_start[-1] += f' {WIN_SCORE}'
+            self.data_start[-1] += f' {WIN_SCORE_BASE}'
         except Exception as ex:
             self.data_start = []
             print('Error:', ex)

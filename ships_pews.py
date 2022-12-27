@@ -1,7 +1,7 @@
 import os
 import sys
 import pygame
-from config import WIDTH, HEIGHT, SPEED_SETTINGS, ENEMY_HP, PLAYER_HP
+from config import WIDTH, HEIGHT, SPEED_SETTINGS, ENEMY_HP, PLAYER_HP, ENEMY_FIRE_CHANCE
 import random as rd
 
 # Настройки
@@ -12,14 +12,21 @@ screen_rect = (0, 0, WIDTH, HEIGHT)
 clamp = lambda value, minv, maxv: max(min(value, maxv), minv)
 
 
+def cut_sheet(object, sheet, columns, rows):
+    object.rect = pygame.Rect(0, 0, sheet.get_width() // columns, sheet.get_height() // rows)
+    for j in range(rows):
+        for i in range(columns):
+            frame_location = (object.rect.w * i, object.rect.h * j)
+            object.frames.append(sheet.subsurface(pygame.Rect(frame_location, object.rect.size)))
+
+
+# Функция загрузки изображений
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
-    # если файл не существует, то выходим
     if not os.path.isfile(fullname):
         print(f"Файл с изображением '{fullname}' не найден")
         sys.exit()
     image = pygame.image.load(fullname)
-    # прозрачный цвет
     if colorkey is not None:
         image = image.convert()
         if colorkey == -1:
@@ -30,6 +37,7 @@ def load_image(name, colorkey=None):
     return image
 
 
+# Класс игрока
 class PlayesShip(pygame.sprite.Sprite):
     image = load_image("player.png")
     image = pygame.transform.scale(image, (100, 75))
@@ -54,6 +62,7 @@ class PlayesShip(pygame.sprite.Sprite):
             self.kill()
 
 
+# Класс вражеского корабля 1
 class EnemyShip(pygame.sprite.Sprite):
     image = load_image("enemyship.png")
     image = pygame.transform.scale(image, (80, 60))
@@ -87,6 +96,7 @@ class EnemyShip(pygame.sprite.Sprite):
             self.kill()
 
 
+# Класс вражеского корабля 2
 class EnemyShipOmega(pygame.sprite.Sprite):
     image = load_image("enemyshipomega.png")
     image = pygame.transform.scale(image, (80, 70))
@@ -111,7 +121,7 @@ class EnemyShipOmega(pygame.sprite.Sprite):
         self.rect.x -= self.speed
 
         if not self.cooldown_fire:
-            if not (rd.randint(0, 100)):
+            if not (rd.randint(0, ENEMY_FIRE_CHANCE)):
                 self.cooldown_fire = 300
                 PewQuantum(self.group2, 4, 1, (self.rect.x, self.rect.y))
         else:
@@ -130,6 +140,7 @@ class EnemyShipOmega(pygame.sprite.Sprite):
             self.kill()
 
 
+# Класс курсора
 class Arrow(pygame.sprite.Sprite):
     image = load_image("arrow.png")
 
@@ -152,17 +163,10 @@ class PewBase(pygame.sprite.Sprite):
     def __init__(self, group, columns, rows, pos=(0, 0)):
         super().__init__(group)
         self.frames = []
-        self.cut_sheet(PewBase.image, columns, rows)
+        cut_sheet(self, PewBase.image, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
         self.rect = self.rect.move(40, clamp(pos[1] + 20, 60, HEIGHT - 55))
-
-    def cut_sheet(self, sheet, columns, rows):
-        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns, sheet.get_height() // rows)
-        for j in range(rows):
-            for i in range(columns):
-                frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)))
 
     def update(self, pos):
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
@@ -179,17 +183,10 @@ class PewAntimatter(pygame.sprite.Sprite):
     def __init__(self, group, columns, rows, pos=(0, 0)):
         super().__init__(group)
         self.frames = []
-        self.cut_sheet(PewAntimatter.image, columns, rows)
+        cut_sheet(self, PewAntimatter.image, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
         self.rect = self.rect.move(40, pos[1] + 20)
-
-    def cut_sheet(self, sheet, columns, rows):
-        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns, sheet.get_height() // rows)
-        for j in range(rows):
-            for i in range(columns):
-                frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)))
 
     def update(self, pos):
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
@@ -207,17 +204,10 @@ class PewQuantum(pygame.sprite.Sprite):
     def __init__(self, group, columns, rows, pos=(0, 0)):
         super().__init__(group)
         self.frames = []
-        self.cut_sheet(PewQuantum.image, columns, rows)
+        cut_sheet(self, PewQuantum.image, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
         self.rect = self.rect.move(pos[0], pos[1] + 20)
-
-    def cut_sheet(self, sheet, columns, rows):
-        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns, sheet.get_height() // rows)
-        for j in range(rows):
-            for i in range(columns):
-                frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(sheet.subsurface(pygame.Rect(frame_location, self.rect.size)))
 
     def update(self, pos, player):
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)

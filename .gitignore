@@ -1,2 +1,6 @@
 .idea
 venv
+main.spec
+dist
+build
+main.exe

@@ -1,5 +1,12 @@
 import sys
+
+# Выключение надписи в консоль
+from os import environ
+
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+
 import pygame as pg
+
 from config import *
 from ships_pews import PlayesShip, Arrow, PewBase, PewAntimatter, load_image
 from tools import random_spawn, Button, DataText, create_particles
@@ -43,8 +50,14 @@ cooldown_antimatter = 0
 cooldown_dmg = 10
 cooldown_enemy = 0
 
+# Debug
+debug_mode = DEBUG_SETTINGS
+
 # Номер уровня
 level = 1
+
+# Очки для конца
+win_score = WIN_SCORE_BASE
 
 # Название окна
 pg.display.set_caption(NAME)
@@ -108,6 +121,7 @@ def btn5_onclick(object):
 
     btn1.skip = False
     btn2.skip = False
+    btn6.skip = False
 
     is_start = True
     is_end = False
@@ -115,13 +129,22 @@ def btn5_onclick(object):
     player = PlayesShip(player_sprite_group)
 
 
-# Кнопки
-btn1 = Button(WIDTH - 200, HEIGHT - 240, 150, 50, screen, MENU_FONT, btns, 'Уровень 1', btn1_onclick)
-btn2 = Button(WIDTH - 200, HEIGHT - 170, 150, 50, screen, MENU_FONT, btns, 'Уровень 2', btn2_onclick)
-btn3 = Button(WIDTH - 200, HEIGHT - 100, 150, 50, screen, MENU_FONT, btns, 'Выход', btn3_onclick)
+def btn6_onclick(object):
+    global win_score, level
+    win_score = 999999
+    level = 2
+    level = 3
+    object.skip = True
 
-btn5 = Button(WIDTH - 200, HEIGHT - 240, 150, 50, screen, MENU_FONT, btn_end, 'Главная', btn5_onclick)
-btn4 = Button(WIDTH - 200, HEIGHT - 170, 150, 50, screen, MENU_FONT, btn_end, 'Выход', btn3_onclick)
+
+# Кнопки
+btn1 = Button(WIDTH - 200, HEIGHT - 265, 150, 50, screen, MENU_FONT, btns, 'Уровень 1', btn1_onclick)
+btn2 = Button(WIDTH - 200, HEIGHT - 195, 150, 50, screen, MENU_FONT, btns, 'Уровень 2', btn2_onclick)
+btn6 = Button(WIDTH - 200, HEIGHT - 125, 150, 50, screen, MENU_FONT, btns, 'Бесконечный', btn6_onclick)
+btn3 = Button(WIDTH - 200, HEIGHT - 55, 150, 50, screen, MENU_FONT, btns, 'Выход', btn3_onclick)
+
+btn5 = Button(WIDTH // 2 - 250, HEIGHT - 150, 150, 50, screen, MENU_FONT, btn_end, 'Главная', btn5_onclick)
+btn4 = Button(WIDTH // 2 + 100, HEIGHT - 150, 150, 50, screen, MENU_FONT, btn_end, 'Выход', btn3_onclick)
 
 # Основной цикл
 while running:
@@ -130,11 +153,12 @@ while running:
     pos = pg.mouse.get_pos()
     show_mouse = False
 
-    if (player.score >= WIN_SCORE) or player.hp == 0:
+    if (player.score >= win_score) or player.hp == 0:
         is_end = True
 
     if debug_mode:
-        pg.display.set_caption(NAME + ' | ' + str(clock.get_fps())[:4] + f' FPS | LVL: {level} | [DEBUG]')
+        pg.display.set_caption(
+            NAME + ' | ' + str(clock.get_fps())[:4] + f' FPS | LVL: {level} | WIN: {win_score} | [DEBUG]')
 
     # Цикл событий
     for event in pg.event.get():
@@ -255,12 +279,14 @@ while running:
         hp_status = FONT.render(f'ХП: {player.hp}', True, (200, 0, 255))
         score_status = FONT.render(f'Очки: {player.score}', True, (200, 0, 255))
         enemy_status = FONT.render(f'След. волна: {cooldown_enemy}', True, (200, 0, 255))
+        lvl_status = FONT.render(f'Уровень: {level}', True, (200, 0, 255))
 
         screen.blit(hp_status, (10, 10))
         screen.blit(score_status, (100, 10))
         screen.blit(cooldown_blaster_info, (200, 10))
         screen.blit(cooldown_antimatter_info, (360, 10))
         screen.blit(enemy_status, (580, 10))
+        screen.blit(lvl_status, (800, 10))
 
 
     # Обновление кулдауна
@@ -327,7 +353,7 @@ while running:
 
     # Начальный экран
     if is_start:
-        if btn1.skip or btn2.skip:
+        if btn1.skip or btn2.skip or btn6.skip:
             is_start = False
         start()
         for i in btns:
@@ -335,6 +361,7 @@ while running:
 
     # Конечный экран
     if is_end:
+        win_score = WIN_SCORE_BASE
         end()
 
     # Отрисовка мыши
@@ -351,6 +378,8 @@ while running:
 
 
     update_all()
+
+    player.hp = max(0, player.hp)
 
 pg.quit()
 sys.exit()

@@ -2,7 +2,7 @@
 NAME = "Space Warrior"
 
 # Debug
-debug_mode = False
+DEBUG_SETTINGS = True
 
 # Размеры экрана
 WIDTH = 1000
@@ -12,7 +12,10 @@ HEIGHT = 600
 FPS = 60
 
 # Очки для победы
-WIN_SCORE = 1000
+WIN_SCORE_BASE = 1
+
+# Шанс выстрела врага
+ENEMY_FIRE_CHANCE = 100
 
 # Здоровье игрока
 PLAYER_HP = 100
@@ -23,7 +26,7 @@ GRAVITY = 0.1
 SPEED_SETTINGS = {
     'BASE_SPEED': 8,
     'ANTIMATTER_SPEED': 16,
-    'ENEMY_SPEED': [2, 4],
+    'ENEMY_SPEED': (2, 4),
 }
 
 COOLDOWN_LIST = {
@@ -42,4 +45,10 @@ DAMAGE_LIST = {
 ENEMY_HP = {
     'BASE': 40,
     'OMEGA': 120,
+}
+
+LEVEL_CHANCHES = {
+    1: (1, 1),
+    2: (0, 6),
+    3: (0, 3),
 }
