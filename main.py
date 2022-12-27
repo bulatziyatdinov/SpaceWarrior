@@ -1,7 +1,7 @@
 import sys
 import pygame as pg
 from config import *
-from ships_pews import PlayesShip, Arrow, PewBase, PewAntimatter, load_image
+from ships_pews import PlayesShip, Arrow, PewBase, PewAntimatter, load_image, EnemyShip, EnemyShipSpeed, EnemyShipOmega
 from tools import random_spawn, Button, DataText, create_particles, write_results, record_result
 
 # ФПС
@@ -78,6 +78,7 @@ player = PlayesShip(player_sprite_group)
 arrow = Arrow(arrow_sprite_group)
 
 record = record_result()
+print(record)
 
 
 # Функции кнопок
@@ -94,7 +95,9 @@ def btn2_onclick(object):
 
 
 def btn3_onclick(object):
-    global running
+    global running, record
+    write_results(player.score)
+    record = record_result()
     running = False
 
 
@@ -180,6 +183,9 @@ while running:
                     if (not cooldown_base) and (player.hp != 0):
                         PewBase(bluster_sprite_group, 4, 1, pos)
                         cooldown_base = COOLDOWN_LIST['BASE']
+                if event.button == 2:
+                    if (not cooldown_base) and (player.hp != 0) and (debug_mode):
+                        player.score += 1000
                 elif event.button == 3:
                     if (not cooldown_antimatter) and (not is_end):
                         PewAntimatter(antimatter_sprite_group, 4, 1, pos)
@@ -214,8 +220,15 @@ while running:
 
             hits = pg.sprite.groupcollide(enemy_ship_sprite_group, bluster_sprite_group, False, True)
             for hit in hits:
-                hit.image = pg.transform.scale(load_image("enemyship2.png"), (80, 60))
-                hit.hp = max(0, hit.hp - DAMAGE_LIST['BASE'])
+                if isinstance(hit, EnemyShip):
+                    hit.image = hit.damaged_image
+                    hit.hp = max(0, hit.hp - DAMAGE_LIST['BASE'])
+                elif isinstance(hit, EnemyShipSpeed):
+                    hit.image = hit.damaged_image
+                    hit.hp = max(0, hit.hp - DAMAGE_LIST['BASE'])
+                elif isinstance(hit, EnemyShipOmega):
+                    hit.image = hit.damaged_image
+                    hit.hp = max(0, hit.hp - DAMAGE_LIST['BASE'])
 
             hits = pg.sprite.groupcollide(enemy_ship_sprite_group, antimatter_sprite_group, False, False)
             for hit in hits:

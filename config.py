@@ -45,10 +45,11 @@ DAMAGE_LIST = {
 ENEMY_HP = {
     'BASE': 40,
     'OMEGA': 120,
+    'SPEED': 20,
 }
 
 LEVEL_CHANCHES = {
     1: (1, 1),
     2: (0, 6),
-    3: (0, 3),
+    3: (0, 4),
 }

@@ -140,6 +140,40 @@ class EnemyShipOmega(pygame.sprite.Sprite):
             self.kill()
 
 
+# Класс вражеского корабля 3
+class EnemyShipSpeed(pygame.sprite.Sprite):
+    image = load_image("enemyshipspeed.png")
+    image = pygame.transform.scale(image, (60, 40))
+
+    def __init__(self, group, y, x, speed, player):
+        super().__init__(group)
+        self.speed = speed + 2
+        self.player = player
+        self.group = group
+        self.image = EnemyShipSpeed.image
+        self.damaged_image = pygame.transform.scale(load_image("enemyshipspeed2.png"), (60, 40))
+        self.rect = self.image.get_rect()
+        self.rect.x = WIDTH - 50 + x
+        self.rect.y = y
+        self.hp = ENEMY_HP['SPEED']
+        self.is_damaged = False
+
+    def update(self, pos):
+        self.image = EnemyShipSpeed.image
+        self.rect.x -= self.speed
+        if self.hp == 0:
+            self.player.score += 10
+            self.kill()
+        if self.rect.x <= 100:
+            self.image = self.damaged_image
+            self.player.hp -= 5
+            self.player.score -= 10
+            self.kill()
+        if not self.rect.colliderect(screen_rect):
+            self.player.score -= 10
+            self.kill()
+
+
 # Класс курсора
 class Arrow(pygame.sprite.Sprite):
     image = load_image("arrow.png")

@@ -1,6 +1,6 @@
 import pygame
 from config import WIDTH, HEIGHT, SPEED_SETTINGS, WIN_SCORE_BASE, LEVEL_CHANCHES
-from ships_pews import EnemyShip, EnemyShipOmega, load_image
+from ships_pews import EnemyShip, EnemyShipOmega, load_image, EnemyShipSpeed
 import random as rd
 
 
@@ -9,10 +9,12 @@ def random_spawn(group, player, level=1, group2=None):
     res = []
     n = rd.randint(3, 7)
 
-    yyy = list(range(50, HEIGHT - 60, 70))
-    yyy = rd.sample(yyy, k=n)
+    yyy_1 = list(range(50, HEIGHT - 60, 70))
+    yyy_1 = rd.sample(yyy_1, k=n)
 
-    for y in yyy:
+    yyy_2_list = list(range(50, HEIGHT - 60, 70))
+
+    for y in yyy_1:
         ship_type = rd.randint(LEVEL_CHANCHES[level][0], LEVEL_CHANCHES[level][1])
         x = rd.randrange(-25, 25)
         sp = SPEED_SETTINGS['ENEMY_SPEED']
@@ -21,6 +23,10 @@ def random_spawn(group, player, level=1, group2=None):
             res.append(EnemyShip(group, y, x, speed, player))
         else:
             res.append(EnemyShipOmega(group, y, x, speed, player, group2))
+            if level == 3:
+                if rd.randint(0, 1):
+                    yyy_2 = rd.choice(yyy_2_list)
+                    res.append(EnemyShipSpeed(group, yyy_2, x, speed, player))
     return res
 
 
@@ -36,7 +42,7 @@ def record_result() -> int | str:
     try:
         with open('records.txt', 'r', encoding='utf-8') as f:
             temp = f.readlines()
-        temp = max(tuple(map(str.rstrip, temp)))
+        temp = max(tuple(map(lambda x: int(x.rstrip()), temp)))
         return temp
     except Exception:
         return '###'
