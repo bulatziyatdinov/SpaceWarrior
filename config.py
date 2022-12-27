@@ -12,7 +12,7 @@ HEIGHT = 600
 FPS = 60
 
 # Очки для победы
-WIN_SCORE_BASE = 1
+WIN_SCORE_BASE = 100
 
 # Шанс выстрела врага
 ENEMY_FIRE_CHANCE = 100

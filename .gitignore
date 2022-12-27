@@ -3,3 +3,5 @@ venv
 main.spec
 dist
 build
+test.py
+records.txt

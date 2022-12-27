@@ -24,6 +24,24 @@ def random_spawn(group, player, level=1, group2=None):
     return res
 
 
+def write_results(score: int):
+    try:
+        with open('records.txt', 'a', encoding='utf-8') as f:
+            f.write(f'{score}\n')
+    except Exception as ex:
+        print('Error: ', ex)
+
+
+def record_result() -> int | str:
+    try:
+        with open('records.txt', 'r', encoding='utf-8') as f:
+            temp = f.readlines()
+        temp = max(tuple(map(str.rstrip, temp)))
+        return temp
+    except Exception:
+        return 'Пока нет'
+
+
 class Button:
     def __init__(self, x, y, width, height, screen, font, container, buttonText='Button', onclickFunction=None,
                  onePress=False):

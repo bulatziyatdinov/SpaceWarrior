@@ -1,15 +1,8 @@
 import sys
-
-# Выключение надписи в консоль
-from os import environ
-
-environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
-
 import pygame as pg
-
 from config import *
 from ships_pews import PlayesShip, Arrow, PewBase, PewAntimatter, load_image
-from tools import random_spawn, Button, DataText, create_particles
+from tools import random_spawn, Button, DataText, create_particles, write_results, record_result
 
 # ФПС
 clock = pg.time.Clock()
@@ -84,6 +77,8 @@ TEST_sprite_group = pg.sprite.Group()
 player = PlayesShip(player_sprite_group)
 arrow = Arrow(arrow_sprite_group)
 
+record = record_result()
+
 
 # Функции кнопок
 def btn1_onclick(object):
@@ -104,7 +99,7 @@ def btn3_onclick(object):
 
 
 def btn5_onclick(object):
-    global is_start, is_end, cooldown_base, cooldown_antimatter, cooldown_dmg, cooldown_enemy, player
+    global is_start, is_end, cooldown_base, cooldown_antimatter, cooldown_dmg, cooldown_enemy, player, record
     for i in bluster_sprite_group:
         i.kill()
     for i in antimatter_sprite_group:
@@ -126,13 +121,15 @@ def btn5_onclick(object):
     is_start = True
     is_end = False
 
+    write_results(player.score)
+    record = record_result()
+
     player = PlayesShip(player_sprite_group)
 
 
 def btn6_onclick(object):
     global win_score, level
     win_score = 999999
-    level = 2
     level = 3
     object.skip = True
 
@@ -319,6 +316,8 @@ while running:
         for i in range(len(TEXT.data_start)):
             start = END_FONT.render(TEXT.data_start[i], True, (255, 255, 255))
             screen.blit(start, (WIDTH // 2 - 400, HEIGHT // 2 + 40 * i - 200))
+        rec = END_FONT.render(f'Рекорд бесконечного режима: {record}', True, (200, 0, 255))
+        screen.blit(rec, (100, HEIGHT - 100))
 
 
     # Функция для экрана в конце
