@@ -39,7 +39,7 @@ def record_result() -> int | str:
         temp = max(tuple(map(str.rstrip, temp)))
         return temp
     except Exception:
-        return 'Пока нет'
+        return '###'
 
 
 class Button:
