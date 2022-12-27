@@ -289,14 +289,15 @@ while running:
     # Обновление кулдауна
     def cooldown_update():
         global cooldown_base, cooldown_antimatter, cooldown_dmg, cooldown_enemy
-        if cooldown_base:
-            cooldown_base -= 1
-        if cooldown_antimatter:
-            cooldown_antimatter -= 1
-        if cooldown_dmg:
-            cooldown_dmg -= 1
-        if cooldown_enemy:
-            cooldown_enemy -= 1
+        if pg.mouse.get_focused():
+            if cooldown_base:
+                cooldown_base -= 1
+            if cooldown_antimatter:
+                cooldown_antimatter -= 1
+            if cooldown_dmg:
+                cooldown_dmg -= 1
+            if cooldown_enemy:
+                cooldown_enemy -= 1
 
 
     # Отрисовка экрана
