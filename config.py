@@ -2,7 +2,7 @@
 NAME = "Space Warrior"
 
 # Debug
-DEBUG_SETTINGS = True
+DEBUG_SETTINGS = False
 
 # Размеры экрана
 WIDTH = 1000
@@ -12,7 +12,7 @@ HEIGHT = 600
 FPS = 60
 
 # Очки для победы
-WIN_SCORE_BASE = 100
+WIN_SCORE_BASE = 1000
 
 # Шанс выстрела врага
 ENEMY_FIRE_CHANCE = 100
