@@ -96,7 +96,8 @@ def btn2_onclick(object):
 
 def btn3_onclick(object):
     global running, record
-    write_results(player.score)
+    if level == 3:
+        write_results(player.score)
     record = record_result()
     running = False
 
@@ -124,7 +125,8 @@ def btn5_onclick(object):
     is_start = True
     is_end = False
 
-    write_results(player.score)
+    if level == 3:
+        write_results(player.score)
     record = record_result()
 
     player = PlayesShip(player_sprite_group)
