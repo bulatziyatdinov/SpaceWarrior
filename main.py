@@ -78,7 +78,6 @@ player = PlayesShip(player_sprite_group)
 arrow = Arrow(arrow_sprite_group)
 
 record = record_result()
-print(record)
 
 
 # Функции кнопок
@@ -170,7 +169,16 @@ while running:
         elif event.type == pg.KEYDOWN:
             if event.key == pg.K_ESCAPE:
                 running = False
-            if event.key == pg.K_TAB:
+            elif event.key == pg.K_SPACE:
+                if debug_mode:
+                    if not is_end:
+                        is_end = True
+                        is_start = False
+                    else:
+                        is_end = False
+                        is_start = True
+                        btn5_onclick(1)
+            elif event.key == pg.K_TAB:
                 if debug_mode:
                     debug_mode = False
                     pg.display.set_caption(NAME)
@@ -187,7 +195,7 @@ while running:
                         cooldown_base = COOLDOWN_LIST['BASE']
                 if event.button == 2:
                     if (not cooldown_base) and (player.hp != 0) and (debug_mode):
-                        player.score += 1000
+                        player.score += 100
                 elif event.button == 3:
                     if (not cooldown_antimatter) and (not is_end):
                         PewAntimatter(antimatter_sprite_group, 4, 1, pos)
