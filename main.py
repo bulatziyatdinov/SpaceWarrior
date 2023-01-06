@@ -14,7 +14,10 @@ screen = pg.display.set_mode((WIDTH, HEIGHT))
 pg.mouse.set_visible(False)
 
 # Необходимые флаги
-running = True
+if __name__ == '__main__':
+    running = True
+else:
+    running = False
 show_mouse = False
 is_start = True
 is_end = False

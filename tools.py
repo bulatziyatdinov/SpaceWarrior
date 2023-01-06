@@ -30,6 +30,7 @@ def random_spawn(group, player, level=1, group2=None):
     return res
 
 
+# Запись результатов бесконечного режима
 def write_results(score: int):
     try:
         with open('records.txt', 'a', encoding='utf-8') as f:
@@ -38,6 +39,7 @@ def write_results(score: int):
         print('Error: ', ex)
 
 
+# Чтение результатов бесконечного режима
 def record_result() -> int | str:
     try:
         with open('records.txt', 'r', encoding='utf-8') as f:
@@ -48,6 +50,7 @@ def record_result() -> int | str:
         return '###'
 
 
+# Класс кнопок
 class Button:
     def __init__(self, x, y, width, height, screen, font, container, buttonText='Button', onclickFunction=None,
                  onePress=False):
@@ -97,6 +100,7 @@ class Button:
         self.screen.blit(self.buttonSurface, self.buttonRect)
 
 
+# Класс для хранения текста
 class DataText:
     def __init__(self, file_start, file_end1, file_end2):
         try:
@@ -159,6 +163,7 @@ class Particle(pygame.sprite.Sprite):
             self.kill()
 
 
+# Функция создания частиц
 def create_particles(group, gravity, particle_count=20):
     numbers = range(-5, 6)
     position = (rd.randint(0, WIDTH), rd.randint(0, HEIGHT))
