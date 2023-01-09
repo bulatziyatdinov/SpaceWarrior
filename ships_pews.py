@@ -7,6 +7,9 @@ import random as rd
 # Настройки
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 screen_rect = (0, 0, WIDTH, HEIGHT)
+pygame.init()
+pewenemy_sound = pygame.mixer.Sound("music/pewenemy.mp3")
+pewenemy_sound.set_volume(0.1)
 
 # Функция для ограничения значений
 clamp = lambda value, minv, maxv: max(min(value, maxv), minv)
@@ -123,6 +126,7 @@ class EnemyShipOmega(pygame.sprite.Sprite):
         if not self.cooldown_fire:
             if not (rd.randint(0, ENEMY_FIRE_CHANCE)):
                 self.cooldown_fire = 300
+                pewenemy_sound.play(fade_ms=100)
                 PewQuantum(self.group2, 4, 1, (self.rect.x, self.rect.y))
         else:
             self.cooldown_fire -= 1

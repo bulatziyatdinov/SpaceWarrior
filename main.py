@@ -9,7 +9,7 @@ clock = pg.time.Clock()
 
 # Нужные вещи
 pg.init()
-pg.mixer.init()
+
 screen = pg.display.set_mode((WIDTH, HEIGHT))
 pg.mouse.set_visible(False)
 
@@ -21,6 +21,7 @@ else:
 show_mouse = False
 is_start = True
 is_end = False
+play_music = True
 
 # Бэкграунды
 background_image = load_image('background2.png')
@@ -82,17 +83,30 @@ arrow = Arrow(arrow_sprite_group)
 
 record = record_result()
 
+# Музыка
+theme_sound = pg.mixer.Sound("music/main_music.mp3")
+pew_sound = pg.mixer.Sound("music/pew.wav")
+pewantimatter_sound = pg.mixer.Sound("music/antimatter.mp3")
+
+theme_sound.set_volume(0.1)
+pew_sound.set_volume(0.1)
+pewantimatter_sound.set_volume(0.1)
+
+theme_sound.play(-1)
+
 
 # Функции кнопок
 def btn1_onclick(object):
     global level
     level = 1
+    theme_sound.set_volume(0.05)
     object.skip = True
 
 
 def btn2_onclick(object):
     global level
     level = 2
+    theme_sound.set_volume(0.05)
     object.skip = True
 
 
@@ -127,6 +141,8 @@ def btn5_onclick(object):
     is_start = True
     is_end = False
 
+    theme_sound.set_volume(0.1)
+
     if level == 3:
         write_results(player.score)
     record = record_result()
@@ -138,7 +154,18 @@ def btn6_onclick(object):
     global win_score, level
     win_score = 999999
     level = 3
+    theme_sound.set_volume(0.05)
     object.skip = True
+
+
+def btn7_onclick(object):
+    global play_music
+    if play_music:
+        play_music = False
+        theme_sound.set_volume(0)
+    else:
+        play_music = True
+        theme_sound.set_volume(0.1)
 
 
 # Кнопки
@@ -146,6 +173,7 @@ btn1 = Button(WIDTH - 200, HEIGHT - 265, 150, 50, screen, MENU_FONT, btns, 'Ур
 btn2 = Button(WIDTH - 200, HEIGHT - 195, 150, 50, screen, MENU_FONT, btns, 'Уровень 2', btn2_onclick)
 btn6 = Button(WIDTH - 200, HEIGHT - 125, 150, 50, screen, MENU_FONT, btns, 'Бесконечный', btn6_onclick)
 btn3 = Button(WIDTH - 200, HEIGHT - 55, 150, 50, screen, MENU_FONT, btns, 'Выход', btn3_onclick)
+btn7 = Button(10, HEIGHT - 60, 70, 50, screen, MENU_FONT, btns, 'Музыка', btn7_onclick)
 
 btn5 = Button(WIDTH // 2 - 250, HEIGHT - 150, 150, 50, screen, MENU_FONT, btn_end, 'Главная', btn5_onclick)
 btn4 = Button(WIDTH // 2 + 100, HEIGHT - 150, 150, 50, screen, MENU_FONT, btn_end, 'Выход', btn3_onclick)
@@ -194,6 +222,7 @@ while running:
             if is_freeze:
                 if event.button == 1:
                     if (not cooldown_base) and (player.hp != 0):
+                        pew_sound.play()
                         PewBase(bluster_sprite_group, 4, 1, pos)
                         cooldown_base = COOLDOWN_LIST['BASE']
                 if event.button == 2:
@@ -201,6 +230,7 @@ while running:
                         player.score += 100
                 elif event.button == 3:
                     if (not cooldown_antimatter) and (not is_end):
+                        pewantimatter_sound.play()
                         PewAntimatter(antimatter_sprite_group, 4, 1, pos)
                         cooldown_antimatter = COOLDOWN_LIST['ANTIMATTER']
 
