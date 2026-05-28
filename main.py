@@ -1,8 +1,13 @@
 import sys
+
 import pygame as pg
-from config import *
-from ships_pews import PlayesShip, Arrow, PewBase, PewAntimatter, load_image, EnemyShip, EnemyShipSpeed, EnemyShipOmega
-from tools import random_spawn, Button, DataText, create_particles, write_results, record_result
+
+import config
+from ships_pews import (Arrow, EnemyShip, EnemyShipOmega, EnemyShipSpeed, 
+                        load_image, PewAntimatter, PewBase, PlayesShip)
+from tools import (random_spawn, Button, DataText, create_particles,
+                   write_results, record_result)
+
 
 # ФПС
 clock = pg.time.Clock()
@@ -10,28 +15,27 @@ clock = pg.time.Clock()
 # Нужные вещи
 pg.init()
 
-screen = pg.display.set_mode((WIDTH, HEIGHT))
+screen = pg.display.set_mode((config.WIDTH, config.HEIGHT))
 pg.mouse.set_visible(False)
 
 # Необходимые флаги
+running = False
+
 if __name__ == '__main__':
     running = True
-else:
-    running = False
+
 show_mouse = False
 is_start = True
 is_end = False
 play_music = True
 
-# Бэкграунды
-background_image = load_image('background2.png')
-background_image = pg.transform.scale(background_image, (WIDTH, HEIGHT))
-
-background_start_image = load_image('background3.png')
-background_start_image = pg.transform.scale(background_start_image, (WIDTH, HEIGHT))
-
-background_end_image = load_image('background4.png')
-background_end_image = pg.transform.scale(background_end_image, (WIDTH, HEIGHT))
+# Задние фоны
+background_image = pg.transform.scale(
+    load_image('background2.png'), (config.WIDTH, config.HEIGHT))
+background_start_image = pg.transform.scale(
+    load_image('background3.png'), (config.WIDTH, config.HEIGHT))
+background_end_image = pg.transform.scale(
+    load_image('background4.png'), (config.WIDTH, config.HEIGHT))
 
 # Шрифты
 FONT = pg.font.SysFont('Arial', 20)
@@ -39,25 +43,29 @@ MENU_FONT = pg.font.SysFont('Arial', 20)
 END_FONT = pg.font.SysFont('Arial', 36)
 
 # Текст
-TEXT = DataText('start_text.txt', 'end_text_good.txt', 'end_text_bad.txt')
+TEXT = DataText(
+    'start_text.txt',
+    'end_text_good.txt',
+    'end_text_bad.txt',
+)
 
-# Кулдаун оружия
+# Перезарядка оружия (в кадрах)
 cooldown_base = 0
 cooldown_antimatter = 0
 cooldown_dmg = 10
 cooldown_enemy = 0
 
-# Debug
-debug_mode = DEBUG_SETTINGS
+# Debug-режим
+debug_mode = config.DEBUG_SETTINGS
 
-# Номер уровня
+# Номер текущего уровня
 level = 1
 
 # Очки для конца
-win_score = WIN_SCORE_BASE
+win_score = config.WIN_SCORE_BASE
 
 # Название окна
-pg.display.set_caption(NAME)
+pg.display.set_caption(config.NAME)
 
 # Иконка окна
 pygame_icon = load_image('player2.png')
@@ -73,6 +81,8 @@ bluster_sprite_group = pg.sprite.Group()
 antimatter_sprite_group = pg.sprite.Group()
 enemy_bluster_sprite_group = pg.sprite.Group()
 enemy_ship_sprite_group = pg.sprite.Group()
+
+# Списки кнопок
 btns = []
 btn_end = []
 
@@ -96,21 +106,21 @@ theme_sound.play(-1)
 
 
 # Функции кнопок
-def btn1_onclick(object):
+def btn1_onclick(obj):
     global level
     level = 1
     theme_sound.set_volume(0.05)
-    object.skip = True
+    obj.skip = True
 
 
-def btn2_onclick(object):
+def btn2_onclick(obj):
     global level
     level = 2
     theme_sound.set_volume(0.05)
-    object.skip = True
+    obj.skip = True
 
 
-def btn3_onclick(object):
+def btn3_onclick(obj):
     global running, record
     if level == 3:
         write_results(player.score)
@@ -118,16 +128,17 @@ def btn3_onclick(object):
     running = False
 
 
-def btn5_onclick(object):
-    global is_start, is_end, cooldown_base, cooldown_antimatter, cooldown_dmg, cooldown_enemy, player, record
-    for i in bluster_sprite_group:
-        i.kill()
-    for i in antimatter_sprite_group:
-        i.kill()
-    for i in enemy_bluster_sprite_group:
-        i.kill()
-    for i in enemy_ship_sprite_group:
-        i.kill()
+def btn5_onclick():
+    global is_start, is_end, cooldown_base, cooldown_antimatter, \
+        cooldown_dmg, cooldown_enemy, player, record
+    for obj in bluster_sprite_group:
+        obj.kill()
+    for obj in antimatter_sprite_group:
+        obj.kill()
+    for obj in enemy_bluster_sprite_group:
+        obj.kill()
+    for obj in enemy_ship_sprite_group:
+        obj.kill()
 
     cooldown_base = 0
     cooldown_antimatter = 0
@@ -150,15 +161,15 @@ def btn5_onclick(object):
     player = PlayesShip(player_sprite_group)
 
 
-def btn6_onclick(object):
+def btn6_onclick(obj):
     global win_score, level
     win_score = 999999
     level = 3
     theme_sound.set_volume(0.05)
-    object.skip = True
+    obj.skip = True
 
 
-def btn7_onclick(object):
+def btn7_onclick(obj):
     global play_music
     if play_music:
         play_music = False
@@ -169,14 +180,14 @@ def btn7_onclick(object):
 
 
 # Кнопки
-btn1 = Button(WIDTH - 200, HEIGHT - 265, 150, 50, screen, MENU_FONT, btns, 'Уровень 1', btn1_onclick)
-btn2 = Button(WIDTH - 200, HEIGHT - 195, 150, 50, screen, MENU_FONT, btns, 'Уровень 2', btn2_onclick)
-btn6 = Button(WIDTH - 200, HEIGHT - 125, 150, 50, screen, MENU_FONT, btns, 'Бесконечный', btn6_onclick)
-btn3 = Button(WIDTH - 200, HEIGHT - 55, 150, 50, screen, MENU_FONT, btns, 'Выход', btn3_onclick)
-btn7 = Button(10, HEIGHT - 60, 70, 50, screen, MENU_FONT, btns, 'Музыка', btn7_onclick)
+btn1 = Button(config.WIDTH - 200, config.HEIGHT - 265, 150, 50, screen, MENU_FONT, btns, 'Уровень 1', btn1_onclick)
+btn2 = Button(config.WIDTH - 200, config.HEIGHT - 195, 150, 50, screen, MENU_FONT, btns, 'Уровень 2', btn2_onclick)
+btn6 = Button(config.WIDTH - 200, config.HEIGHT - 125, 150, 50, screen, MENU_FONT, btns, 'Бесконечный', btn6_onclick)
+btn3 = Button(config.WIDTH - 200, config.HEIGHT - 55, 150, 50, screen, MENU_FONT, btns, 'Выход', btn3_onclick)
+btn7 = Button(10, config.HEIGHT - 60, 70, 50, screen, MENU_FONT, btns, 'Музыка', btn7_onclick)
 
-btn5 = Button(WIDTH // 2 - 250, HEIGHT - 150, 150, 50, screen, MENU_FONT, btn_end, 'Главная', btn5_onclick)
-btn4 = Button(WIDTH // 2 + 100, HEIGHT - 150, 150, 50, screen, MENU_FONT, btn_end, 'Выход', btn3_onclick)
+btn5 = Button(config.WIDTH // 2 - 250, config.HEIGHT - 150, 150, 50, screen, MENU_FONT, btn_end, 'Главная', btn5_onclick)
+btn4 = Button(config.WIDTH // 2 + 100, config.HEIGHT - 150, 150, 50, screen, MENU_FONT, btn_end, 'Выход', btn3_onclick)
 
 # Основной цикл
 while running:
@@ -190,7 +201,7 @@ while running:
 
     if debug_mode:
         pg.display.set_caption(
-            NAME + ' | ' + str(clock.get_fps())[:4] + f' FPS | LVL: {level} | WIN: {win_score} | [DEBUG]')
+            config.NAME + ' | ' + str(clock.get_fps())[:4] + f' FPS | LVL: {level} | WIN: {win_score} | [DEBUG]')
 
     # Цикл событий
     for event in pg.event.get():
@@ -208,11 +219,11 @@ while running:
                     else:
                         is_end = False
                         is_start = True
-                        btn5_onclick(1)
+                        btn5_onclick()
             elif event.key == pg.K_TAB:
                 if debug_mode:
                     debug_mode = False
-                    pg.display.set_caption(NAME)
+                    pg.display.set_caption(config.NAME)
                 else:
                     debug_mode = True
 
@@ -224,7 +235,7 @@ while running:
                     if (not cooldown_base) and (player.hp != 0):
                         pew_sound.play()
                         PewBase(bluster_sprite_group, 4, 1, pos)
-                        cooldown_base = COOLDOWN_LIST['BASE']
+                        cooldown_base = config.COOLDOWN_LIST['BASE']
                 if event.button == 2:
                     if (not cooldown_base) and (player.hp != 0) and (debug_mode):
                         player.score += 100
@@ -232,7 +243,7 @@ while running:
                     if (not cooldown_antimatter) and (not is_end):
                         pewantimatter_sound.play()
                         PewAntimatter(antimatter_sprite_group, 4, 1, pos)
-                        cooldown_antimatter = COOLDOWN_LIST['ANTIMATTER']
+                        cooldown_antimatter = config.COOLDOWN_LIST['ANTIMATTER']
 
 
     # Обновление поля
@@ -259,28 +270,28 @@ while running:
                 res = random_spawn(enemy_ship_sprite_group, player, level, enemy_bluster_sprite_group)
                 for i in res:
                     i
-                cooldown_enemy = COOLDOWN_LIST['ENEMY']
+                cooldown_enemy = config.COOLDOWN_LIST['ENEMY']
 
             hits = pg.sprite.groupcollide(enemy_ship_sprite_group, bluster_sprite_group, False, True)
             for hit in hits:
                 if isinstance(hit, EnemyShip):
                     hit.image = hit.damaged_image
-                    hit.hp = max(0, hit.hp - DAMAGE_LIST['BASE'])
+                    hit.hp = max(0, hit.hp - config.DAMAGE_LIST['BASE'])
                 elif isinstance(hit, EnemyShipSpeed):
                     hit.image = hit.damaged_image
-                    hit.hp = max(0, hit.hp - DAMAGE_LIST['BASE'])
+                    hit.hp = max(0, hit.hp - config.DAMAGE_LIST['BASE'])
                 elif isinstance(hit, EnemyShipOmega):
                     hit.image = hit.damaged_image
-                    hit.hp = max(0, hit.hp - DAMAGE_LIST['BASE'])
+                    hit.hp = max(0, hit.hp - config.DAMAGE_LIST['BASE'])
 
             hits = pg.sprite.groupcollide(enemy_ship_sprite_group, antimatter_sprite_group, False, False)
             for hit in hits:
                 hit.image = hit.damaged_image
-                hit.hp = max(0, hit.hp - DAMAGE_LIST['ANTIMATTER'])
+                hit.hp = max(0, hit.hp - config.DAMAGE_LIST['ANTIMATTER'])
 
             hits = pg.sprite.groupcollide(player_sprite_group, enemy_ship_sprite_group, False, True)
             for hit in hits:
-                hit.hp -= DAMAGE_LIST['ENEMY']
+                hit.hp -= config.DAMAGE_LIST['ENEMY']
                 player.is_damaged = True
 
             pg.sprite.groupcollide(bluster_sprite_group, enemy_bluster_sprite_group, True, True)
@@ -289,7 +300,7 @@ while running:
 
             # Покраснение при попадании
             if player.is_damaged:
-                cooldown_dmg = COOLDOWN_LIST['DMG']
+                cooldown_dmg = config.COOLDOWN_LIST['DMG']
                 player.is_damaged = False
             if not (cooldown_dmg):
                 player.image = PlayesShip.image
@@ -372,9 +383,9 @@ while running:
         show_mouse = True
         for i in range(len(TEXT.data_start)):
             start = END_FONT.render(TEXT.data_start[i], True, (255, 255, 255))
-            screen.blit(start, (WIDTH // 2 - 400, HEIGHT // 2 + 40 * i - 200))
+            screen.blit(start, (config.WIDTH // 2 - 400, config.HEIGHT // 2 + 40 * i - 200))
         rec = END_FONT.render(f'Рекорд бесконечного режима: {record}', True, (200, 0, 255))
-        screen.blit(rec, (100, HEIGHT - 100))
+        screen.blit(rec, (100, config.HEIGHT - 100))
 
 
     # Функция для экрана в конце
@@ -391,7 +402,7 @@ while running:
         else:
             end_message1 = TEXT.data_end1[0]
             end_message2 = TEXT.data_end1[1]
-            create_particles(particles_sprite_group, GRAVITY, 1)
+            create_particles(particles_sprite_group, config.GRAVITY, 1)
             particles_sprite_group.draw(screen)
             particles_sprite_group.update()
 
@@ -399,9 +410,9 @@ while running:
         end2 = END_FONT.render(end_message2, True, (255, 255, 255))
         end_scr = END_FONT.render(end_score, True, (255, 255, 255))
 
-        screen.blit(end1, (WIDTH // 2 - 300, HEIGHT // 2 - 40))
-        screen.blit(end2, (WIDTH // 2 - 300, HEIGHT // 2))
-        screen.blit(end_scr, (WIDTH // 2 - 300, HEIGHT // 2 + 80))
+        screen.blit(end1, (config.WIDTH // 2 - 300, config.HEIGHT // 2 - 40))
+        screen.blit(end2, (config.WIDTH // 2 - 300, config.HEIGHT // 2))
+        screen.blit(end_scr, (config.WIDTH // 2 - 300, config.HEIGHT // 2 + 80))
 
         for i in btn_end:
             i.process(pos)
@@ -412,12 +423,12 @@ while running:
         if btn1.skip or btn2.skip or btn6.skip:
             is_start = False
         start()
-        for i in btns:
-            i.process(pos)
+        for btn in btns:
+            btn.process(pos)
 
     # Конечный экран
     if is_end:
-        win_score = WIN_SCORE_BASE
+        win_score = config.WIN_SCORE_BASE
         end()
 
     # Отрисовка мыши
@@ -426,9 +437,9 @@ while running:
         arrow_sprite_group.draw(screen)
 
 
-    # Обновдение параметров
+    # Обновление параметров
     def update_all():
-        clock.tick(FPS)
+        clock.tick(config.FPS)
         pg.display.update()
         pg.display.flip()
 

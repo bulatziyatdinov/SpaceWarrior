@@ -1,0 +1,15 @@
+[flake8]
+import-order-style = google
+application-import-names =
+    SpaceWarrior,
+    config,
+    tools,
+    ships_pews,
+    main
+extend-exclude =
+    .idea,
+    venv,
+    build,
+    dist,
+    trash
+max-line-length = 80
