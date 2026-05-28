@@ -1,7 +1,15 @@
 .idea
+__pycache__
 venv
-main.spec
+.venv
+
 dist
 build
+main.spec
+
+trash
 test.py
+
 records.txt
+*.docx
+*.pptx
