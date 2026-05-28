@@ -1,10 +1,12 @@
-import pygame
-from config import WIDTH, HEIGHT, SPEED_SETTINGS, WIN_SCORE_BASE, LEVEL_CHANCHES
-from ships_pews import EnemyShip, EnemyShipOmega, load_image, EnemyShipSpeed
 import random as rd
 
+import pygame
 
-# Рандомный спавн врагов
+from config import HEIGHT, LEVEL_CHANCES, SPEED_SETTINGS, WIDTH, WIN_SCORE_BASE
+from ships_pews import EnemyShip, EnemyShipOmega, EnemyShipSpeed, load_image
+
+
+# Рандомное появление врагов
 def random_spawn(group, player, level=1, group2=None):
     res = []
     n = rd.randint(3, 7)
@@ -15,7 +17,7 @@ def random_spawn(group, player, level=1, group2=None):
     yyy_2_list = list(range(50, HEIGHT - 60, 70))
 
     for y in yyy_1:
-        ship_type = rd.randint(LEVEL_CHANCHES[level][0], LEVEL_CHANCHES[level][1])
+        ship_type = rd.randint(LEVEL_CHANCES[level][0], LEVEL_CHANCES[level][1])
         x = rd.randrange(-25, 25)
         sp = SPEED_SETTINGS['ENEMY_SPEED']
         speed = rd.randrange(sp[0], sp[1])
@@ -46,14 +48,14 @@ def record_result() -> int | str:
             temp = f.readlines()
         temp = max(tuple(map(lambda x: int(x.rstrip()), temp)))
         return temp
-    except Exception:
+    except FileNotFoundError:
         return '###'
 
 
 # Класс кнопок
 class Button:
-    def __init__(self, x, y, width, height, screen, font, container, buttonText='Button', onclickFunction=None,
-                 onePress=False):
+    def __init__(self, x, y, width, height, screen, font, container,
+                 buttonText='Button', onclickFunction=None, onePress=False):
         self.x = x
         self.y = y
         self.skip = False
@@ -102,7 +104,7 @@ class Button:
 class DataText:
     def __init__(self, file_start, file_end1, file_end2):
         try:
-            with open(f"text/{file_start}", 'r', encoding='utf-8') as f:
+            with open(f'text/{file_start}', 'r', encoding='utf-8') as f:
                 temp = f.readlines()
             self.data_start = list(map(str.strip, temp))
             self.data_start[-1] += f' {WIN_SCORE_BASE}'
@@ -111,7 +113,7 @@ class DataText:
             print('Error:', ex)
 
         try:
-            with open(f"text/{file_end1}", 'r', encoding='utf-8') as f:
+            with open(f'text/{file_end1}', 'r', encoding='utf-8') as f:
                 temp = f.readlines()
             self.data_end1 = list(map(str.strip, temp))
         except Exception as ex:
@@ -119,7 +121,7 @@ class DataText:
             print('Error:', ex)
 
         try:
-            with open(f"text/{file_end2}", 'r', encoding='utf-8') as f:
+            with open(f'text/{file_end2}', 'r', encoding='utf-8') as f:
                 temp = f.readlines()
             self.data_end2 = list(map(str.strip, temp))
         except Exception as ex:
@@ -134,7 +136,7 @@ class DataText:
 
 # Генератор частиц
 class Particle(pygame.sprite.Sprite):
-    fire = [load_image("star.png")]
+    fire = [load_image('star.png')]
 
     for scale in (4, 8, 12):
         fire.append(pygame.transform.scale(fire[0], (scale, scale)))

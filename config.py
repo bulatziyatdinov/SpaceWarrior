@@ -1,5 +1,5 @@
 # Название
-NAME = "Space Warrior"
+NAME = 'Space Warrior'
 
 # Debug
 DEBUG_SETTINGS = False
@@ -48,7 +48,7 @@ ENEMY_HP = {
     'SPEED': 20,
 }
 
-LEVEL_CHANCHES = {
+LEVEL_CHANCES = {
     1: (1, 1),
     2: (0, 6),
     3: (0, 4),
