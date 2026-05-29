@@ -1,33 +1,49 @@
 import os
-import sys
-import pygame
-from config import WIDTH, HEIGHT, SPEED_SETTINGS, ENEMY_HP, PLAYER_HP, ENEMY_FIRE_CHANCE
 import random as rd
+import sys
+
+import pygame
+
+from config import (ENEMY_FIRE_CHANCE, ENEMY_HP,
+                    HEIGHT, PLAYER_HP, SPEED_SETTINGS, WIDTH)
+
 
 # Настройки
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 screen_rect = (0, 0, WIDTH, HEIGHT)
 pygame.init()
-pewenemy_sound = pygame.mixer.Sound("music/pewenemy.mp3")
+pewenemy_sound = pygame.mixer.Sound('sound/pewenemy.mp3')
 pewenemy_sound.set_volume(0.1)
 
+
 # Функция для ограничения значений
-clamp = lambda value, minv, maxv: max(min(value, maxv), minv)
+def clamp(value: int | float, min_value: int | float,
+          max_value: int | float) -> int | float:
+    if min_value > max_value:
+        raise ValueError('Минимум > максимум')
+    if value > max_value:
+        return max_value
+    elif value < min_value:
+        return min_value
+    else:
+        return value
 
 
-def cut_sheet(object, sheet, columns, rows):
-    object.rect = pygame.Rect(0, 0, sheet.get_width() // columns, sheet.get_height() // rows)
+def cut_sheet(obj, sheet, columns, rows):
+    obj.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
+                           sheet.get_height() // rows)
     for j in range(rows):
         for i in range(columns):
-            frame_location = (object.rect.w * i, object.rect.h * j)
-            object.frames.append(sheet.subsurface(pygame.Rect(frame_location, object.rect.size)))
+            frame_location = (obj.rect.w * i, obj.rect.h * j)
+            obj.frames.append(
+                sheet.subsurface(pygame.Rect(frame_location, obj.rect.size)))
 
 
 # Функция загрузки изображений
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
     if not os.path.isfile(fullname):
-        print(f"Файл с изображением '{fullname}' не найден")
+        print(f'Файл с изображением "{fullname}" не найден')
         sys.exit()
     image = pygame.image.load(fullname)
     if colorkey is not None:
@@ -40,16 +56,24 @@ def load_image(name, colorkey=None):
     return image
 
 
-# Класс игрока
-class PlayesShip(pygame.sprite.Sprite):
-    image = load_image("player.png")
-    image = pygame.transform.scale(image, (100, 75))
-
+class ShipBase(pygame.sprite.Sprite):
     def __init__(self, group):
         super().__init__(group)
         self.group = group
-        self.image = PlayesShip.image
-        self.damaged_image = pygame.transform.scale(load_image("player_dmg.png"), (100, 75))
+
+    def update(self, pos):
+        pass
+
+
+# Класс игрока
+class PlayerShip(ShipBase):
+    image = pygame.transform.scale(load_image('player.png'), (100, 75))
+
+    def __init__(self, group):
+        super().__init__(group)
+        self.image = PlayerShip.image
+        self.damaged_image = pygame.transform.scale(
+            load_image('player_dmg.png'), (100, 75))
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.rect.x = 10
@@ -66,17 +90,16 @@ class PlayesShip(pygame.sprite.Sprite):
 
 
 # Класс вражеского корабля 1
-class EnemyShip(pygame.sprite.Sprite):
-    image = load_image("enemyship.png")
-    image = pygame.transform.scale(image, (80, 60))
+class EnemyShip(ShipBase):
+    image = pygame.transform.scale(load_image('enemyship.png'), (80, 60))
 
     def __init__(self, group, y, x, speed, player):
         super().__init__(group)
         self.speed = speed
         self.player = player
-        self.group = group
         self.image = EnemyShip.image
-        self.damaged_image = pygame.transform.scale(load_image("enemyship2.png"), (80, 60))
+        self.damaged_image = pygame.transform.scale(
+            load_image('enemyship2.png'), (80, 60))
         self.rect = self.image.get_rect()
         self.rect.x = WIDTH - 50 + x
         self.rect.y = y
@@ -100,18 +123,17 @@ class EnemyShip(pygame.sprite.Sprite):
 
 
 # Класс вражеского корабля 2
-class EnemyShipOmega(pygame.sprite.Sprite):
-    image = load_image("enemyshipomega.png")
-    image = pygame.transform.scale(image, (80, 70))
+class EnemyShipOmega(ShipBase):
+    image = pygame.transform.scale(load_image('enemyshipomega.png'), (80, 70))
 
     def __init__(self, group, y, x, speed, player, group2=None):
         super().__init__(group)
         self.group2 = group2
         self.speed = speed
         self.player = player
-        self.group = group
         self.image = EnemyShipOmega.image
-        self.damaged_image = pygame.transform.scale(load_image("enemyshipomega2.png"), (80, 70))
+        self.damaged_image = pygame.transform.scale(
+            load_image('enemyshipomega2.png'), (80, 70))
         self.rect = self.image.get_rect()
         self.rect.x = WIDTH - 50 + x
         self.rect.y = y
@@ -145,17 +167,17 @@ class EnemyShipOmega(pygame.sprite.Sprite):
 
 
 # Класс вражеского корабля 3
-class EnemyShipSpeed(pygame.sprite.Sprite):
-    image = load_image("enemyshipspeed.png")
-    image = pygame.transform.scale(image, (60, 40))
+class EnemyShipSpeed(ShipBase):
+    image = pygame.transform.scale(load_image('enemyshipspeed.png'), (60, 40))
+    damaged_image = load_image('enemyshipspeed2.png')
 
     def __init__(self, group, y, x, speed, player):
         super().__init__(group)
-        self.speed = speed + 2
+        self.speed = speed
         self.player = player
-        self.group = group
         self.image = EnemyShipSpeed.image
-        self.damaged_image = pygame.transform.scale(load_image("enemyshipspeed2.png"), (60, 40))
+        self.damaged_image = pygame.transform.scale(
+            EnemyShipSpeed.damaged_image(60, 40))
         self.rect = self.image.get_rect()
         self.rect.x = WIDTH - 50 + x
         self.rect.y = y
@@ -180,7 +202,7 @@ class EnemyShipSpeed(pygame.sprite.Sprite):
 
 # Класс курсора
 class Arrow(pygame.sprite.Sprite):
-    image = load_image("arrow.png")
+    image = load_image('arrow.png')
 
     def __init__(self, group):
         super().__init__(group)
@@ -196,7 +218,7 @@ class Arrow(pygame.sprite.Sprite):
 
 # Класс обычного выстрела
 class PewBase(pygame.sprite.Sprite):
-    image = load_image("pew1.png")
+    image = load_image('pew1.png')
 
     def __init__(self, group, columns, rows, pos=(0, 0)):
         super().__init__(group)
@@ -216,7 +238,7 @@ class PewBase(pygame.sprite.Sprite):
 
 # Класс выстрела анти-материи
 class PewAntimatter(pygame.sprite.Sprite):
-    image = load_image("pew2.png")
+    image = load_image('pew2.png')
 
     def __init__(self, group, columns, rows, pos=(0, 0)):
         super().__init__(group)
@@ -236,8 +258,7 @@ class PewAntimatter(pygame.sprite.Sprite):
 
 # Класс квантового выстрела
 class PewQuantum(pygame.sprite.Sprite):
-    image = load_image("pew3.png")
-    image = pygame.transform.rotate(image, 180)
+    image = pygame.transform.rotate(load_image('pew3.png'), 180)
 
     def __init__(self, group, columns, rows, pos=(0, 0)):
         super().__init__(group)
