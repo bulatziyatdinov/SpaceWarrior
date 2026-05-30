@@ -1,39 +1,14 @@
 import random as rd
 
 import pygame
+from pygame.sprite import Group
 
-from config import HEIGHT, LEVEL_CHANCES, SPEED_SETTINGS, WIDTH, WIN_SCORE_BASE
-from ships_pews import EnemyShip, EnemyShipOmega, EnemyShipSpeed, load_image
-
-
-# Рандомное появление врагов
-def random_spawn(group, player, level=1, group2=None):
-    res = []
-    n = rd.randint(3, 7)
-
-    yyy_1 = list(range(50, HEIGHT - 60, 70))
-    yyy_1 = rd.sample(yyy_1, k=n)
-
-    yyy_2_list = list(range(50, HEIGHT - 60, 70))
-
-    for y in yyy_1:
-        ship_type = rd.randint(LEVEL_CHANCES[level][0], LEVEL_CHANCES[level][1])
-        x = rd.randrange(-25, 25)
-        sp = SPEED_SETTINGS['ENEMY_SPEED']
-        speed = rd.randrange(sp[0], sp[1])
-        if ship_type:
-            res.append(EnemyShip(group, y, x, speed, player))
-        else:
-            res.append(EnemyShipOmega(group, y, x, speed, player, group2))
-            if level == 3:
-                if rd.randint(0, 1):
-                    yyy_2 = rd.choice(yyy_2_list)
-                    res.append(EnemyShipSpeed(group, yyy_2, x, speed, player))
-    return res
+from config import HEIGHT, WIDTH, WIN_SCORE_BASE
+from ships_pews import load_image
 
 
 # Запись результатов бесконечного режима
-def write_results(score: int):
+def write_record_result(score: int) -> None:
     try:
         with open('records.txt', 'a', encoding='utf-8') as f:
             f.write(f'{score}\n')
@@ -42,14 +17,14 @@ def write_results(score: int):
 
 
 # Чтение результатов бесконечного режима
-def record_result() -> int | str:
+def get_record_result() -> int:
     try:
         with open('records.txt', 'r', encoding='utf-8') as f:
             temp = f.readlines()
         temp = max(tuple(map(lambda x: int(x.rstrip()), temp)))
         return temp
     except FileNotFoundError:
-        return '###'
+        return 0
 
 
 # Класс кнопок
@@ -79,8 +54,9 @@ class Button:
 
         container.append(self)
 
-    def process(self, pos):
+    def process(self, pos: tuple[int, int]) -> None:
         self.buttonSurface.fill(self.fillColors['normal'])
+
         if self.buttonRect.collidepoint(pos):
             self.buttonSurface.fill(self.fillColors['hover'])
             if pygame.mouse.get_pressed(num_buttons=3)[0]:
@@ -128,11 +104,6 @@ class DataText:
             self.data_end2 = []
             print('Error:', ex)
 
-    def info(self):
-        print(self.data_start)
-        print(self.data_end1)
-        print(self.data_end2)
-
 
 # Генератор частиц
 class Particle(pygame.sprite.Sprite):
@@ -153,7 +124,7 @@ class Particle(pygame.sprite.Sprite):
 
         self.rect.x, self.rect.y = pos
 
-    def update(self):
+    def update(self) -> None:
         self.velocity[1] += self.gravity
 
         self.rect.x += self.velocity[0]
@@ -164,8 +135,11 @@ class Particle(pygame.sprite.Sprite):
 
 
 # Функция создания частиц
-def create_particles(group, gravity, particle_count=20):
+def create_particles(group: Group,
+                     gravity: int | float,
+                     particle_count: int = 20) -> None:
     numbers = range(-5, 6)
     position = (rd.randint(0, WIDTH), rd.randint(0, HEIGHT))
     for _ in range(particle_count):
-        Particle(group, gravity, position, rd.choice(numbers), rd.choice(numbers))
+        Particle(group, gravity, position,
+                 rd.choice(numbers), rd.choice(numbers))

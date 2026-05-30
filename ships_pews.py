@@ -4,8 +4,8 @@ import sys
 
 import pygame
 
-from config import (ENEMY_FIRE_CHANCE, ENEMY_HP,
-                    HEIGHT, PLAYER_HP, SPEED_SETTINGS, WIDTH)
+from config import (ENEMY_FIRE_CHANCE, ENEMY_HP, HEIGHT, LEVEL_CHANCES, PLAYER_HP,
+                    SPEED_SETTINGS, WIDTH)
 
 
 # Настройки
@@ -84,11 +84,16 @@ class PlayerShip(ShipBase):
         self.score = 0
         self.is_damaged = False
 
-    def update(self, pos):
+    def update(self, pos) -> None:
         self.rect.y = clamp(pos[1], 40, HEIGHT - 80)
-        self.hp = max(self.hp, 0)
         if self.hp == 0:
             self.kill()
+
+    def is_alive(self) -> bool:
+        return self.hp > 0
+
+    def take_damage(self, damage: int) -> None:
+        self.hp = max(self.hp - damage, 0)
 
 
 # Класс вражеского корабля 1
@@ -116,7 +121,7 @@ class EnemyShip(ShipBase):
             self.kill()
         if self.rect.x <= 100:
             self.image = self.default_damaged_image
-            self.player.hp -= 5
+            self.player.take_damage(5)
             self.player.score -= 10
             self.kill()
         if not self.rect.colliderect(screen_rect):
@@ -162,7 +167,7 @@ class EnemyShipOmega(ShipBase):
             self.kill()
         if self.rect.x <= 100:
             self.image = self.default_damaged_image
-            self.player.hp -= 8
+            self.player.take_damage(8)
             self.player.score -= 20
             self.kill()
         if not self.rect.colliderect(screen_rect):
@@ -174,7 +179,8 @@ class EnemyShipOmega(ShipBase):
 class EnemyShipSpeed(ShipBase):
     default_image = pygame.transform.scale(
         load_image('enemyshipspeed.png'), (60, 40))
-    default_damaged_image = load_image('enemyshipspeed2.png')
+    default_damaged_image = pygame.transform.scale(
+        load_image('enemyshipspeed2.png'), (60, 40))
 
     def __init__(self, group, y, x, speed, player: PlayerShip):
         super().__init__(group)
@@ -188,14 +194,14 @@ class EnemyShipSpeed(ShipBase):
         self.is_damaged = False
 
     def update(self, pos):
-        self.image = EnemyShipSpeed.image
+        self.image = self.default_image
         self.rect.x -= self.speed
         if self.hp == 0:
             self.player.score += 10
             self.kill()
         if self.rect.x <= 100:
             self.image = self.default_damaged_image
-            self.player.hp -= 5
+            self.player.take_damage(5)
             self.player.score -= 10
             self.kill()
         if not self.rect.colliderect(screen_rect):
@@ -270,8 +276,7 @@ class PewQuantum(pygame.sprite.Sprite):
             self.kill()
             self.player.image = self.player.default_damaged_image
             self.player.is_damaged = True
-            self.player.hp -= 10
-            self.player.hp = max(self.player.hp, 0)
+            self.player.take_damage(10)
 
 
 # Класс курсора
@@ -287,3 +292,27 @@ class Arrow(pygame.sprite.Sprite):
 
     def update(self, pos):
         self.rect.x, self.rect.y = pos
+
+
+def random_spawn(group, player, level=1, group2=None):
+    res = []
+    n = rd.randint(3, 7)
+
+    yyy_1 = rd.sample(list(range(50, HEIGHT - 60, 70)), k=n)
+
+    yyy_2_list = list(range(50, HEIGHT - 60, 70))
+
+    for y in yyy_1:
+        ship_type = rd.randint(LEVEL_CHANCES[level][0], LEVEL_CHANCES[level][1])
+        x = rd.randrange(-25, 25)
+        sp = SPEED_SETTINGS['ENEMY_SPEED']
+        speed = rd.randrange(sp[0], sp[1])
+        if ship_type:
+            res.append(EnemyShip(group, y, x, speed, player))
+        else:
+            res.append(EnemyShipOmega(group, y, x, speed, player, group2))
+            if level == 3:
+                if rd.randint(0, 1):
+                    yyy_2 = rd.choice(yyy_2_list)
+                    res.append(EnemyShipSpeed(group, yyy_2, x, speed, player))
+    return res
