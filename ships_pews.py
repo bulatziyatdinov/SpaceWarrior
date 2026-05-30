@@ -57,8 +57,11 @@ def load_image(name, colorkey=None):
 
 
 class ShipBase(pygame.sprite.Sprite):
+    default_image = None
+
     def __init__(self, group):
         super().__init__(group)
+        self.image = self.default_image
         self.group = group
 
     def update(self, pos):
@@ -67,14 +70,13 @@ class ShipBase(pygame.sprite.Sprite):
 
 # Класс игрока
 class PlayerShip(ShipBase):
-    image = pygame.transform.scale(load_image('player.png'), (100, 75))
+    default_image = pygame.transform.scale(
+        load_image('player.png'), (100, 75))
+    default_damaged_image = pygame.transform.scale(
+        load_image('player_dmg.png'), (100, 75))
 
     def __init__(self, group):
         super().__init__(group)
-        self.image = PlayerShip.image
-        self.damaged_image = pygame.transform.scale(
-            load_image('player_dmg.png'), (100, 75))
-        self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
         self.rect.x = 10
         self.rect.y = 0
@@ -91,15 +93,15 @@ class PlayerShip(ShipBase):
 
 # Класс вражеского корабля 1
 class EnemyShip(ShipBase):
-    image = pygame.transform.scale(load_image('enemyship.png'), (80, 60))
+    default_image = pygame.transform.scale(
+        load_image('enemyship.png'), (80, 60))
+    default_damaged_image = pygame.transform.scale(
+        load_image('enemyship2.png'), (80, 60))
 
-    def __init__(self, group, y, x, speed, player):
+    def __init__(self, group, y, x, speed, player: PlayerShip):
         super().__init__(group)
         self.speed = speed
         self.player = player
-        self.image = EnemyShip.image
-        self.damaged_image = pygame.transform.scale(
-            load_image('enemyship2.png'), (80, 60))
         self.rect = self.image.get_rect()
         self.rect.x = WIDTH - 50 + x
         self.rect.y = y
@@ -107,13 +109,13 @@ class EnemyShip(ShipBase):
         self.is_damaged = False
 
     def update(self, pos):
-        self.image = EnemyShip.image
+        self.image = self.default_image
         self.rect.x -= self.speed
         if self.hp == 0:
             self.player.score += 10
             self.kill()
         if self.rect.x <= 100:
-            self.image = self.damaged_image
+            self.image = self.default_damaged_image
             self.player.hp -= 5
             self.player.score -= 10
             self.kill()
@@ -124,16 +126,17 @@ class EnemyShip(ShipBase):
 
 # Класс вражеского корабля 2
 class EnemyShipOmega(ShipBase):
-    image = pygame.transform.scale(load_image('enemyshipomega.png'), (80, 70))
+    default_image = pygame.transform.scale(
+        load_image('enemyshipomega.png'), (80, 70))
+    default_damaged_image = pygame.transform.scale(
+            load_image('enemyshipomega2.png'), (80, 70))
 
-    def __init__(self, group, y, x, speed, player, group2=None):
+    def __init__(self, group, y, x, speed, player: PlayerShip, group2=None):
         super().__init__(group)
         self.group2 = group2
         self.speed = speed
         self.player = player
-        self.image = EnemyShipOmega.image
-        self.damaged_image = pygame.transform.scale(
-            load_image('enemyshipomega2.png'), (80, 70))
+        self.image = self.default_image
         self.rect = self.image.get_rect()
         self.rect.x = WIDTH - 50 + x
         self.rect.y = y
@@ -142,14 +145,15 @@ class EnemyShipOmega(ShipBase):
         self.cooldown_fire = 0
 
     def update(self, pos):
-        self.image = EnemyShipOmega.image
+        self.image = self.default_image
         self.rect.x -= self.speed
 
         if not self.cooldown_fire:
             if not (rd.randint(0, ENEMY_FIRE_CHANCE)):
                 self.cooldown_fire = 300
                 pewenemy_sound.play(fade_ms=100)
-                PewQuantum(self.group2, 4, 1, (self.rect.x, self.rect.y))
+                PewQuantum(self.group2, 4, 1,
+                           (self.rect.x, self.rect.y), self.player)
         else:
             self.cooldown_fire -= 1
 
@@ -157,7 +161,7 @@ class EnemyShipOmega(ShipBase):
             self.player.score += 15
             self.kill()
         if self.rect.x <= 100:
-            self.image = self.damaged_image
+            self.image = self.default_damaged_image
             self.player.hp -= 8
             self.player.score -= 20
             self.kill()
@@ -168,16 +172,15 @@ class EnemyShipOmega(ShipBase):
 
 # Класс вражеского корабля 3
 class EnemyShipSpeed(ShipBase):
-    image = pygame.transform.scale(load_image('enemyshipspeed.png'), (60, 40))
-    damaged_image = load_image('enemyshipspeed2.png')
+    default_image = pygame.transform.scale(
+        load_image('enemyshipspeed.png'), (60, 40))
+    default_damaged_image = load_image('enemyshipspeed2.png')
 
-    def __init__(self, group, y, x, speed, player):
+    def __init__(self, group, y, x, speed, player: PlayerShip):
         super().__init__(group)
         self.speed = speed
         self.player = player
-        self.image = EnemyShipSpeed.image
-        self.damaged_image = pygame.transform.scale(
-            EnemyShipSpeed.damaged_image(60, 40))
+        self.image = self.default_image
         self.rect = self.image.get_rect()
         self.rect.x = WIDTH - 50 + x
         self.rect.y = y
@@ -191,7 +194,7 @@ class EnemyShipSpeed(ShipBase):
             self.player.score += 10
             self.kill()
         if self.rect.x <= 100:
-            self.image = self.damaged_image
+            self.image = self.default_damaged_image
             self.player.hp -= 5
             self.player.score -= 10
             self.kill()
@@ -200,33 +203,18 @@ class EnemyShipSpeed(ShipBase):
             self.kill()
 
 
-# Класс курсора
-class Arrow(pygame.sprite.Sprite):
-    image = load_image('arrow.png')
-
-    def __init__(self, group):
-        super().__init__(group)
-        self.image = Arrow.image
-        self.rect = self.image.get_rect()
-        self.rect.x = 0
-        self.rect.y = 0
-
-    def update(self, pos):
-        self.rect.x = pos[0]
-        self.rect.y = pos[1]
-
-
 # Класс обычного выстрела
 class PewBase(pygame.sprite.Sprite):
-    image = load_image('pew1.png')
+    default_image = load_image('pew1.png')
 
     def __init__(self, group, columns, rows, pos=(0, 0)):
         super().__init__(group)
         self.frames = []
-        cut_sheet(self, PewBase.image, columns, rows)
+        cut_sheet(self, self.default_image, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
-        self.rect = self.rect.move(40, clamp(pos[1] + 20, 60, HEIGHT - 55))
+        self.rect = self.rect.move(
+            40, clamp(pos[1] + 20, 60, HEIGHT - 55))
 
     def update(self, pos):
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
@@ -238,12 +226,12 @@ class PewBase(pygame.sprite.Sprite):
 
 # Класс выстрела анти-материи
 class PewAntimatter(pygame.sprite.Sprite):
-    image = load_image('pew2.png')
+    default_image = load_image('pew2.png')
 
     def __init__(self, group, columns, rows, pos=(0, 0)):
         super().__init__(group)
         self.frames = []
-        cut_sheet(self, PewAntimatter.image, columns, rows)
+        cut_sheet(self, self.default_image, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
         self.rect = self.rect.move(40, pos[1] + 20)
@@ -258,17 +246,19 @@ class PewAntimatter(pygame.sprite.Sprite):
 
 # Класс квантового выстрела
 class PewQuantum(pygame.sprite.Sprite):
-    image = pygame.transform.rotate(load_image('pew3.png'), 180)
+    default_image = pygame.transform.rotate(
+        load_image('pew3.png'), 180)
 
-    def __init__(self, group, columns, rows, pos=(0, 0)):
+    def __init__(self, group, columns, rows, pos, player: PlayerShip):
         super().__init__(group)
         self.frames = []
-        cut_sheet(self, PewQuantum.image, columns, rows)
+        self.player = player
+        cut_sheet(self, self.default_image, columns, rows)
         self.cur_frame = 0
         self.image = self.frames[self.cur_frame]
         self.rect = self.rect.move(pos[0], pos[1] + 20)
 
-    def update(self, pos, player):
+    def update(self, pos):
         self.cur_frame = (self.cur_frame + 1) % len(self.frames)
         self.image = self.frames[self.cur_frame]
         self.rect.x -= 5
@@ -276,9 +266,24 @@ class PewQuantum(pygame.sprite.Sprite):
         if not self.rect.colliderect(screen_rect):
             self.kill()
 
-        if pygame.sprite.collide_mask(self, player):
+        if pygame.sprite.collide_mask(self, self.player):
             self.kill()
-            player.image = player.damaged_image
-            player.is_damaged = True
-            player.hp -= 10
-            player.hp = max(player.hp, 0)
+            self.player.image = self.player.default_damaged_image
+            self.player.is_damaged = True
+            self.player.hp -= 10
+            self.player.hp = max(self.player.hp, 0)
+
+
+# Класс курсора
+class Arrow(pygame.sprite.Sprite):
+    default_image = load_image('arrow.png')
+
+    def __init__(self, group):
+        super().__init__(group)
+        self.image = self.default_image
+        self.rect = self.image.get_rect()
+        self.rect.x = 0
+        self.rect.y = 0
+
+    def update(self, pos):
+        self.rect.x, self.rect.y = pos

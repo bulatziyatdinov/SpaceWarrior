@@ -3,7 +3,7 @@ import-order-style = google
 application-import-names =
     SpaceWarrior,
     config,
-    tools,
+    utils,
     ships_pews,
     main
 extend-exclude =
