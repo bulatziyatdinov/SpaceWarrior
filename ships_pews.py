@@ -8,7 +8,6 @@ from config import (ENEMY_FIRE_CHANCE, ENEMY_HP, HEIGHT, LEVEL_CHANCES, PLAYER_H
                     SPEED_SETTINGS, WIDTH)
 
 
-# Настройки
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 screen_rect = (0, 0, WIDTH, HEIGHT)
 pygame.init()
@@ -16,7 +15,6 @@ pewenemy_sound = pygame.mixer.Sound('sound/pewenemy.mp3')
 pewenemy_sound.set_volume(0.1)
 
 
-# Функция для ограничения значений
 def clamp(value: int | float, min_value: int | float,
           max_value: int | float) -> int | float:
     if min_value > max_value:
@@ -39,7 +37,6 @@ def cut_sheet(obj, sheet, columns, rows):
                 sheet.subsurface(pygame.Rect(frame_location, obj.rect.size)))
 
 
-# Функция загрузки изображений
 def load_image(name, colorkey=None):
     fullname = os.path.join('data', name)
     if not os.path.isfile(fullname):
@@ -68,7 +65,6 @@ class ShipBase(pygame.sprite.Sprite):
         pass
 
 
-# Класс игрока
 class PlayerShip(ShipBase):
     default_image = pygame.transform.scale(
         load_image('player.png'), (100, 75))
@@ -96,7 +92,6 @@ class PlayerShip(ShipBase):
         self.hp = max(self.hp - damage, 0)
 
 
-# Класс вражеского корабля 1
 class EnemyShip(ShipBase):
     default_image = pygame.transform.scale(
         load_image('enemyship.png'), (80, 60))
@@ -129,7 +124,6 @@ class EnemyShip(ShipBase):
             self.kill()
 
 
-# Класс вражеского корабля 2
 class EnemyShipOmega(ShipBase):
     default_image = pygame.transform.scale(
         load_image('enemyshipomega.png'), (80, 70))
@@ -175,7 +169,6 @@ class EnemyShipOmega(ShipBase):
             self.kill()
 
 
-# Класс вражеского корабля 3
 class EnemyShipSpeed(ShipBase):
     default_image = pygame.transform.scale(
         load_image('enemyshipspeed.png'), (60, 40))
@@ -209,7 +202,6 @@ class EnemyShipSpeed(ShipBase):
             self.kill()
 
 
-# Класс обычного выстрела
 class PewBase(pygame.sprite.Sprite):
     default_image = load_image('pew1.png')
 
@@ -230,7 +222,6 @@ class PewBase(pygame.sprite.Sprite):
             self.kill()
 
 
-# Класс выстрела анти-материи
 class PewAntimatter(pygame.sprite.Sprite):
     default_image = load_image('pew2.png')
 
@@ -250,7 +241,6 @@ class PewAntimatter(pygame.sprite.Sprite):
             self.kill()
 
 
-# Класс квантового выстрела
 class PewQuantum(pygame.sprite.Sprite):
     default_image = pygame.transform.rotate(
         load_image('pew3.png'), 180)
@@ -279,7 +269,6 @@ class PewQuantum(pygame.sprite.Sprite):
             self.player.take_damage(10)
 
 
-# Класс курсора
 class Arrow(pygame.sprite.Sprite):
     default_image = load_image('arrow.png')
 

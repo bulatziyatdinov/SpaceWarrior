@@ -7,8 +7,8 @@ from config import HEIGHT, WIDTH, WIN_SCORE_BASE
 from ships_pews import load_image
 
 
-# Запись результатов бесконечного режима
 def write_record_result(score: int) -> None:
+    """Writes results of endless level into records.txt"""
     try:
         with open('records.txt', 'a', encoding='utf-8') as f:
             f.write(f'{score}\n')
@@ -16,8 +16,8 @@ def write_record_result(score: int) -> None:
         print('Error: ', ex)
 
 
-# Чтение результатов бесконечного режима
 def get_record_result() -> int:
+    """Gets results of endless level from records.txt"""
     try:
         with open('records.txt', 'r', encoding='utf-8') as f:
             temp = f.readlines()
@@ -29,14 +29,15 @@ def get_record_result() -> int:
 
 # Класс кнопок
 class Button:
-    def __init__(self, x, y, width, height, screen, font, container,
+    """
+    Class for Buttons. I do not remember where I got it from.
+    Perhaps it is Yandex Lyceum code what they gave us
+    """
+    def __init__(self, x: int, y: int, width: int, height: int, screen, font, container,
                  buttonText='Button', onclickFunction=None, onePress=False):
-        self.x = x
-        self.y = y
         self.skip = False
         self.screen = screen
         self.font = font
-        self.container = container
         self.width = width
         self.height = height
         self.onclickFunction = onclickFunction
@@ -48,10 +49,8 @@ class Button:
             'pressed': '#333333',
         }
         self.buttonSurface = pygame.Surface((self.width, self.height))
-        self.buttonRect = pygame.Rect(self.x, self.y, self.width, self.height)
-
+        self.buttonRect = pygame.Rect(x, y, self.width, self.height)
         self.buttonSurf = self.font.render(buttonText, True, (20, 20, 20))
-
         container.append(self)
 
     def process(self, pos: tuple[int, int]) -> None:
@@ -76,9 +75,11 @@ class Button:
         self.screen.blit(self.buttonSurface, self.buttonRect)
 
 
-# Класс для хранения текста
 class DataText:
-    def __init__(self, file_start, file_end1, file_end2):
+    """
+    Class that stores text for the main menu and endings
+    """
+    def __init__(self, file_start: str, file_end1: str, file_end2: str):
         try:
             with open(f'text/{file_start}', 'r', encoding='utf-8') as f:
                 temp = f.readlines()
@@ -105,14 +106,17 @@ class DataText:
             print('Error:', ex)
 
 
-# Генератор частиц
 class Particle(pygame.sprite.Sprite):
+    """
+    Class from Yandex Lyceum for particles on the final screen
+    """
     fire = [load_image('star.png')]
 
     for scale in (4, 8, 12):
         fire.append(pygame.transform.scale(fire[0], (scale, scale)))
 
-    def __init__(self, group, gravity, pos, dx, dy):
+    def __init__(self, group: Group, gravity:  int | float, pos: tuple[int, int],
+                 dx: int, dy: int):
         super().__init__(group)
         self.image = rd.choice(self.fire)
         self.group = group
@@ -134,10 +138,10 @@ class Particle(pygame.sprite.Sprite):
             self.kill()
 
 
-# Функция создания частиц
 def create_particles(group: Group,
                      gravity: int | float,
                      particle_count: int = 20) -> None:
+    """Create particles with physics"""
     numbers = range(-5, 6)
     position = (rd.randint(0, WIDTH), rd.randint(0, HEIGHT))
     for _ in range(particle_count):
