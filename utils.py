@@ -82,8 +82,7 @@ class DataText:
     def __init__(self, file_start: str, file_end1: str, file_end2: str):
         try:
             with open(f'text/{file_start}', 'r', encoding='utf-8') as f:
-                temp = f.readlines()
-            self.data_start = list(map(str.strip, temp))
+                self.data_start = list(map(str.strip, f.readlines()))
             self.data_start[-1] += f' {WIN_SCORE_BASE}'
         except Exception as ex:
             self.data_start = []
@@ -91,16 +90,14 @@ class DataText:
 
         try:
             with open(f'text/{file_end1}', 'r', encoding='utf-8') as f:
-                temp = f.readlines()
-            self.data_end1 = list(map(str.strip, temp))
+                self.data_end1 = list(map(str.strip, f.readlines()))
         except Exception as ex:
             self.data_end1 = []
             print('Error:', ex)
 
         try:
             with open(f'text/{file_end2}', 'r', encoding='utf-8') as f:
-                temp = f.readlines()
-            self.data_end2 = list(map(str.strip, temp))
+                self.data_end2 = list(map(str.strip, f.readlines()))
         except Exception as ex:
             self.data_end2 = []
             print('Error:', ex)

@@ -9,7 +9,7 @@ from config import (ENEMY_FIRE_CHANCE, ENEMY_HP, HEIGHT, LEVEL_CHANCES, PLAYER_H
 
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-screen_rect = (0, 0, WIDTH, HEIGHT)
+screen_rect = (0, 0, WIDTH + 30, HEIGHT)
 pygame.init()
 pewenemy_sound = pygame.mixer.Sound('sound/pewenemy.mp3')
 pewenemy_sound.set_volume(0.1)
@@ -91,6 +91,9 @@ class PlayerShip(ShipBase):
     def take_damage(self, damage: int) -> None:
         self.hp = max(self.hp - damage, 0)
 
+    def change_score(self, score: int) -> None:
+        self.score += score
+
 
 class EnemyShip(ShipBase):
     default_image = pygame.transform.scale(
@@ -103,7 +106,7 @@ class EnemyShip(ShipBase):
         self.speed = speed
         self.player = player
         self.rect = self.image.get_rect()
-        self.rect.x = WIDTH - 50 + x
+        self.rect.x = WIDTH + x
         self.rect.y = y
         self.hp = ENEMY_HP['BASE']
         self.is_damaged = False
@@ -112,15 +115,15 @@ class EnemyShip(ShipBase):
         self.image = self.default_image
         self.rect.x -= self.speed
         if self.hp == 0:
-            self.player.score += 10
+            self.player.change_score(10)
             self.kill()
         if self.rect.x <= 100:
             self.image = self.default_damaged_image
             self.player.take_damage(5)
-            self.player.score -= 10
+            self.player.change_score(-10)
             self.kill()
         if not self.rect.colliderect(screen_rect):
-            self.player.score -= 10
+            self.player.change_score(-10)
             self.kill()
 
 
@@ -137,7 +140,7 @@ class EnemyShipOmega(ShipBase):
         self.player = player
         self.image = self.default_image
         self.rect = self.image.get_rect()
-        self.rect.x = WIDTH - 50 + x
+        self.rect.x = WIDTH + x
         self.rect.y = y
         self.hp = ENEMY_HP['OMEGA']
         self.is_damaged = False
@@ -157,15 +160,15 @@ class EnemyShipOmega(ShipBase):
             self.cooldown_fire -= 1
 
         if self.hp == 0:
-            self.player.score += 15
+            self.player.change_score(15)
             self.kill()
         if self.rect.x <= 100:
             self.image = self.default_damaged_image
             self.player.take_damage(8)
-            self.player.score -= 20
+            self.player.change_score(-20)
             self.kill()
         if not self.rect.colliderect(screen_rect):
-            self.player.score -= 20
+            self.player.change_score(-20)
             self.kill()
 
 
@@ -181,7 +184,7 @@ class EnemyShipSpeed(ShipBase):
         self.player = player
         self.image = self.default_image
         self.rect = self.image.get_rect()
-        self.rect.x = WIDTH - 50 + x
+        self.rect.x = WIDTH + x
         self.rect.y = y
         self.hp = ENEMY_HP['SPEED']
         self.is_damaged = False
@@ -190,15 +193,15 @@ class EnemyShipSpeed(ShipBase):
         self.image = self.default_image
         self.rect.x -= self.speed
         if self.hp == 0:
-            self.player.score += 10
+            self.player.change_score(10)
             self.kill()
         if self.rect.x <= 100:
             self.image = self.default_damaged_image
             self.player.take_damage(5)
-            self.player.score -= 10
+            self.player.change_score(-10)
             self.kill()
         if not self.rect.colliderect(screen_rect):
-            self.player.score -= 10
+            self.player.change_score(-10)
             self.kill()
 
 
@@ -283,25 +286,27 @@ class Arrow(pygame.sprite.Sprite):
         self.rect.x, self.rect.y = pos
 
 
-def random_spawn(group, player, level=1, group2=None):
-    res = []
+def random_spawn(enemy_group, enemy_blaster_group, player, level: int):
+    enemies = []
     n = rd.randint(3, 7)
 
-    yyy_1 = rd.sample(list(range(50, HEIGHT - 60, 70)), k=n)
+    y_positions = rd.sample(tuple(range(50, HEIGHT - 60, 70)), k=n)
 
-    yyy_2_list = list(range(50, HEIGHT - 60, 70))
-
-    for y in yyy_1:
-        ship_type = rd.randint(LEVEL_CHANCES[level][0], LEVEL_CHANCES[level][1])
+    for y in y_positions:
+        ship_type = rd.randint(*LEVEL_CHANCES[level])
         x = rd.randrange(-25, 25)
-        sp = SPEED_SETTINGS['ENEMY_SPEED']
-        speed = rd.randrange(sp[0], sp[1])
+        speed = rd.randrange(*SPEED_SETTINGS['ENEMY_SPEED'], 1)
         if ship_type:
-            res.append(EnemyShip(group, y, x, speed, player))
+            enemies.append(EnemyShip(enemy_group, y, x, speed, player))
         else:
-            res.append(EnemyShipOmega(group, y, x, speed, player, group2))
             if level == 3:
                 if rd.randint(0, 1):
-                    yyy_2 = rd.choice(yyy_2_list)
-                    res.append(EnemyShipSpeed(group, yyy_2, x, speed, player))
-    return res
+                    enemies.append(EnemyShipSpeed(
+                        enemy_group, y, x, speed, player))
+                else:
+                    enemies.append(EnemyShipOmega(
+                        enemy_group, y, x, speed, player, enemy_blaster_group))
+            else:
+                enemies.append(EnemyShipOmega(
+                    enemy_group, y, x, speed, player, enemy_blaster_group))
+    return enemies
