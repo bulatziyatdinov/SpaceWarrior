@@ -100,72 +100,12 @@ class Game:
                            50, screen, MENU_FONT, self.btn_end, 'Выход',
                            self.btn3_handler)
 
-    def btn1_handler(self, obj):
-        self.level = 1
-        self.theme_sound.set_volume(0.05)
-        obj.skip = True
-
-    def btn2_handler(self, obj):
-        self.level = 2
-        self.theme_sound.set_volume(0.05)
-        obj.skip = True
-
-    def btn3_handler(self, obj):
-        if self.level == 3:
-            write_record_result(self.player.score)
-        self.record = get_record_result()
-        self.running = False
-
-    def btn5_handler(self, obj):
-        for obj in self.bluster_sprite_group:
-            obj.kill()
-        for obj in self.antimatter_sprite_group:
-            obj.kill()
-        for obj in self.enemy_bluster_sprite_group:
-            obj.kill()
-        for obj in self.enemy_ship_sprite_group:
-            obj.kill()
-
-        self.cooldown_base = 0
-        self.cooldown_antimatter = 0
-        self.cooldown_dmg = 0
-        self.cooldown_enemy = 50
-
-        self.btn1.skip = False
-        self.btn2.skip = False
-        self.btn6.skip = False
-
-        self.is_start = True
-        self.is_end = False
-
-        self.theme_sound.set_volume(0.1)
-
-        if self.level == 3:
-            write_record_result(self.player.score)
-        self.record = get_record_result()
-
-        self.player = PlayerShip(self.player_sprite_group)
-
-    def btn6_handler(self, obj):
-        self.win_score = 999999
-        self.level = 3
-        self.theme_sound.set_volume(0.05)
-        obj.skip = True
-
-    def btn7_handler(self, obj):
-        if self.play_music:
-            self.play_music = False
-            self.theme_sound.set_volume(0)
-        else:
-            self.play_music = True
-            self.theme_sound.set_volume(0.1)
-
     def run(self):
         self.theme_sound.play(-1)
 
         while self.running:
             is_gameplay = not (self.is_start or self.is_end)
-            pos = pg.mouse.get_pos()
+            mouse_pos = pg.mouse.get_pos()
             self.show_mouse = False
 
             if self.player.score >= self.win_score or not self.player.is_alive():
@@ -181,7 +121,10 @@ class Game:
                     self.running = False
                 elif event.type == pg.KEYDOWN:
                     if event.key == pg.K_ESCAPE:
-                        self.running = False
+                        if is_gameplay:
+                            self.btn5_handler(1)
+                        else:
+                            self.running = False
                     elif event.key == pg.K_SPACE:
                         if self.debug_mode:
                             if not self.is_end:
@@ -203,17 +146,18 @@ class Game:
                         if event.button == 1:
                             if not self.cooldown_base and self.player.is_alive():
                                 self.pew_sound.play()
-                                PewBase(self.bluster_sprite_group, 4, 1, pos)
+                                PewBase(self.bluster_sprite_group, 4, 1, mouse_pos)
                                 self.cooldown_base = config.COOLDOWN_LIST['BASE']
                         if event.button == 2:
                             if (not self.cooldown_base
                                     and self.player.is_alive()
                                     and self.debug_mode):
-                                self.player.score += 100
+                                self.player.change_score(100)
                         elif event.button == 3:
                             if not self.cooldown_antimatter and not self.is_end:
                                 self.pewantimatter_sound.play()
-                                PewAntimatter(self.antimatter_sprite_group, 4, 1, pos)
+                                PewAntimatter(
+                                    self.antimatter_sprite_group, 4, 1, mouse_pos)
                                 self.cooldown_antimatter = (
                                     config.COOLDOWN_LIST)['ANTIMATTER']
 
@@ -223,12 +167,14 @@ class Game:
                 self.main_part()
                 self.cooldown_update()
                 self.draw_all_sprites()
-                self.update_all_sprites(pos)
+                if pg.mouse.get_focused():
+                    self.update_all_sprites(mouse_pos)
                 self.draw_info()
 
             if self.player.is_damaged:
                 self.cooldown_dmg = config.COOLDOWN_LIST['DMG']
                 self.player.is_damaged = False
+
             if not self.cooldown_dmg:
                 self.player.image = self.player.default_image
 
@@ -237,14 +183,14 @@ class Game:
                     self.is_start = False
                 self.start()
                 for btn in self.btns:
-                    btn.process(pos)
+                    btn.process(mouse_pos)
 
             if self.is_end:
                 self.win_score = config.WIN_SCORE_BASE
-                self.end(pos)
+                self.end(mouse_pos)
 
             if pg.mouse.get_focused() and self.show_mouse:
-                self.arrow_sprite_group.update(pos)
+                self.arrow_sprite_group.update(mouse_pos)
                 self.arrow_sprite_group.draw(screen)
 
             self.update_all()
@@ -262,8 +208,8 @@ class Game:
 
         if pg.mouse.get_focused():
             if self.cooldown_enemy == 0:
-                random_spawn(self.enemy_ship_sprite_group, self.player,
-                             self.level, self.enemy_bluster_sprite_group)
+                random_spawn(self.enemy_ship_sprite_group,
+                             self.enemy_bluster_sprite_group, self.player, self.level)
                 self.cooldown_enemy = config.COOLDOWN_LIST['ENEMY']
 
             hits = pg.sprite.groupcollide(
@@ -306,12 +252,11 @@ class Game:
         self.enemy_ship_sprite_group.draw(screen)
 
     def update_all_sprites(self, pos: tuple[int, int]):
-        if pg.mouse.get_focused():
-            self.bluster_sprite_group.update(1)
-            self.antimatter_sprite_group.update(1)
-            self.enemy_bluster_sprite_group.update(1)
-            self.enemy_ship_sprite_group.update(1)
-            self.player_sprite_group.update(pos)
+        self.bluster_sprite_group.update(pos)
+        self.antimatter_sprite_group.update(pos)
+        self.enemy_bluster_sprite_group.update(pos)
+        self.enemy_ship_sprite_group.update(pos)
+        self.player_sprite_group.update(pos)
 
     def draw_info(self):
         if self.cooldown_base:
@@ -391,13 +336,77 @@ class Game:
 
     def update_all(self):
         clock.tick(config.FPS)
-        pg.display.update()
+        # pg.display.update()
         pg.display.flip()
 
+    def btn1_handler(self, obj):
+        self.level = 1
+        self.theme_sound.set_volume(0.05)
+        obj.skip = True
 
-if __name__ == '__main__':
+    def btn2_handler(self, obj):
+        self.level = 2
+        self.theme_sound.set_volume(0.05)
+        obj.skip = True
+
+    def btn3_handler(self, obj):
+        if self.level == 3:
+            write_record_result(self.player.score)
+        self.record = get_record_result()
+        self.running = False
+
+    def btn5_handler(self, obj):
+        for obj in self.bluster_sprite_group:
+            obj.kill()
+        for obj in self.antimatter_sprite_group:
+            obj.kill()
+        for obj in self.enemy_bluster_sprite_group:
+            obj.kill()
+        for obj in self.enemy_ship_sprite_group:
+            obj.kill()
+
+        self.cooldown_base = 0
+        self.cooldown_antimatter = 0
+        self.cooldown_dmg = 0
+        self.cooldown_enemy = 50
+
+        self.btn1.skip = False
+        self.btn2.skip = False
+        self.btn6.skip = False
+
+        self.is_start = True
+        self.is_end = False
+
+        self.theme_sound.set_volume(0.1)
+
+        if self.level == 3:
+            write_record_result(self.player.score)
+        self.record = get_record_result()
+
+        self.player = PlayerShip(self.player_sprite_group)
+
+    def btn6_handler(self, obj):
+        self.win_score = 999999
+        self.level = 3
+        self.theme_sound.set_volume(0.05)
+        obj.skip = True
+
+    def btn7_handler(self, obj):
+        if self.play_music:
+            self.play_music = False
+            self.theme_sound.set_volume(0)
+        else:
+            self.play_music = True
+            self.theme_sound.set_volume(0.1)
+
+
+def main():
     game = Game()
     game.run()
 
     pg.quit()
     sys.exit()
+
+
+if __name__ == '__main__':
+    main()
