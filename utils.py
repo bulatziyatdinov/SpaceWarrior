@@ -83,7 +83,7 @@ class DataText:
         try:
             with open(f'text/{file_start}', 'r', encoding='utf-8') as f:
                 self.data_start = list(map(str.strip, f.readlines()))
-            self.data_start[-1] += f' {WIN_SCORE_BASE}'
+            self.data_start[-1] += f' {WIN_SCORE_BASE} очков'
         except Exception as ex:
             self.data_start = []
             print('Error:', ex)

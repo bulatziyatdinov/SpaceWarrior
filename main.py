@@ -140,6 +140,8 @@ class Game:
                             pg.display.set_caption(config.NAME)
                         else:
                             self.debug_mode = True
+                    elif event.key == pg.K_m:
+                        self.btn7_handler(1)
 
                 elif event.type == pg.MOUSEBUTTONDOWN:
                     if is_gameplay:
@@ -341,12 +343,10 @@ class Game:
 
     def btn1_handler(self, obj):
         self.level = 1
-        self.theme_sound.set_volume(0.05)
         obj.skip = True
 
     def btn2_handler(self, obj):
         self.level = 2
-        self.theme_sound.set_volume(0.05)
         obj.skip = True
 
     def btn3_handler(self, obj):
@@ -377,8 +377,6 @@ class Game:
         self.is_start = True
         self.is_end = False
 
-        self.theme_sound.set_volume(0.1)
-
         if self.level == 3:
             write_record_result(self.player.score)
         self.record = get_record_result()
@@ -388,16 +386,11 @@ class Game:
     def btn6_handler(self, obj):
         self.win_score = 999999
         self.level = 3
-        self.theme_sound.set_volume(0.05)
         obj.skip = True
 
     def btn7_handler(self, obj):
-        if self.play_music:
-            self.play_music = False
-            self.theme_sound.set_volume(0)
-        else:
-            self.play_music = True
-            self.theme_sound.set_volume(0.1)
+        self.play_music = not self.play_music
+        self.theme_sound.set_volume(0.1 if self.play_music else 0)
 
 
 def main():

@@ -27,7 +27,9 @@ def clamp(value: int | float, min_value: int | float,
         return value
 
 
-def cut_sheet(obj, sheet, columns, rows):
+def cut_sheet(obj: pygame.sprite.Sprite,
+              sheet: pygame.Surface,
+              columns: int, rows: int) -> None:
     obj.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
                            sheet.get_height() // rows)
     for j in range(rows):
@@ -37,7 +39,7 @@ def cut_sheet(obj, sheet, columns, rows):
                 sheet.subsurface(pygame.Rect(frame_location, obj.rect.size)))
 
 
-def load_image(name, colorkey=None):
+def load_image(name: str, colorkey=None) -> pygame.Surface:
     fullname = os.path.join('data', name)
     if not os.path.isfile(fullname):
         print(f'Файл с изображением "{fullname}" не найден')
@@ -286,7 +288,9 @@ class Arrow(pygame.sprite.Sprite):
         self.rect.x, self.rect.y = pos
 
 
-def random_spawn(enemy_group, enemy_blaster_group, player, level: int):
+def random_spawn(enemy_group: pygame.sprite.Group,
+                 enemy_blaster_group: pygame.sprite.Group,
+                 player: PlayerShip, level: int):
     enemies = []
     n = rd.randint(3, 7)
 
